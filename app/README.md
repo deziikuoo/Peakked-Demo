@@ -1,3 +1,18 @@
+# GameTrend Mobile (Expo)
+
+React Native app: **Popular**, **Nexa**, **Compare**, **My Games**, **Chat**.
+
+## Frontend-only demo mode (default)
+
+By default the app **does not call your backend**: trending games and NEXA use rich mocks (`config/demoMode.js`, `data/mock/`).
+
+- **Turn off demo** (use live FastAPI): in `app/.env` set `EXPO_PUBLIC_DEMO_MODE=false` and restart Metro with `npx expo start --clear`.
+- Copy `app/.env.example` to `app/.env` and add real keys + `EXPO_PUBLIC_API_URL` when demo is off.
+
+---
+
+_Legacy title below referred to an earlier template; run instructions still apply._
+
 # ShaqGPT Mobile App
 
 React Native app built with **Expo** for the ShaqGPT sports chatbot.

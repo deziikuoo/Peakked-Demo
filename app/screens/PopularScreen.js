@@ -26,6 +26,7 @@ import { createThemedStyles } from '../theme/styles';
 import { themes } from '../theme/colors';
 import { MOCK_GAMES, getMockGamesRefreshed } from '../data/mock/popularGames';
 import { getTrendingGames } from '../data/real/popularGamesApi';
+import { DEMO_MODE } from '../config/demoMode';
 import { useGameCache } from '../context/GameCacheContext';
 import GameHeroCard from '../components/GameHeroCard';
 import GameRowCard from '../components/GameRowCard';
@@ -502,7 +503,11 @@ export default function PopularScreen({ navigation }) {
       <View style={localStyles.header}>
         <View style={localStyles.headerLeft}>
           <Text style={localStyles.title}>Popular games</Text>
-          <Text style={localStyles.subtitle}>Live players, streams, and ratings</Text>
+          <Text style={localStyles.subtitle}>
+            {DEMO_MODE
+              ? 'Demo data · Steam-style headers & realistic sparklines (offline)'
+              : 'Live players, streams, and ratings'}
+          </Text>
         </View>
         <Pressable
           style={localStyles.layoutButton}

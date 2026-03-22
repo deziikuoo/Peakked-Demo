@@ -8,6 +8,7 @@ import { spacing } from '../theme/nexaSpacing';
 import { typography } from '../theme/nexaTypography';
 import { getHorizontalPadding, getTopContentPadding } from '../theme/nexaLayout';
 import { gameService } from '../services/api/nexaApi';
+import { DEMO_MODE } from '../config/demoMode';
 import NexaGameRecommender from '../components/nexa/NexaGameRecommender';
 import NexaGameDetailsModal from '../components/nexa/NexaGameDetailsModal';
 
@@ -98,7 +99,9 @@ export default function NexaScreen() {
             </LinearGradient>
           </MaskedView>
           <Text style={[styles.subtitle, styles.bodyFontForce]} allowFontScaling={false}>
-            Discover your next favorite game with our advanced AI!
+            {DEMO_MODE
+              ? 'Offline demo — curated games with realistic stats & Steam artwork (no server).'
+              : 'Discover your next favorite game with our advanced AI!'}
           </Text>
           <LinearGradient
             colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 107, 53, 0.04)']}
@@ -106,7 +109,11 @@ export default function NexaScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.badge}
           >
-            <Text style={[styles.badgeText, styles.bodyFontForce]} allowFontScaling={false}>🧠 Powered by GPT-4o AI Gaming Expert</Text>
+            <Text style={[styles.badgeText, styles.bodyFontForce]} allowFontScaling={false}>
+              {DEMO_MODE
+                ? '📱 Frontend demo · set EXPO_PUBLIC_DEMO_MODE=false for live API'
+                : '🧠 Powered by GPT-4o AI Gaming Expert'}
+            </Text>
           </LinearGradient>
         </View>
 

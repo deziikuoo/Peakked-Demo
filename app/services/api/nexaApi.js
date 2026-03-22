@@ -1,13 +1,22 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
+import { DEMO_MODE } from '../../config/demoMode';
+import {
+  demoNetworkDelay,
+  getDemoRecommendations,
+  getDemoGameDetails,
+  getDemoIgdbAutocomplete,
+} from '../../data/mock/nexaDemoData';
 
-// Set EXPO_PUBLIC_API_URL in .env. Local: use http://localhost:8000/api for web/same machine.
-// Physical device: we auto-detect your PC IP from Metro; or set http://YOUR_PC_IP:8000/api (e.g. 192.168.1.5).
+// Live API base (ignored when DEMO_MODE is true). Set EXPO_PUBLIC_API_URL in .env.
 let API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'https://nexa-pro.up.railway.app/api';
 
-// In dev, physical device/emulator must reach your machine. Prefer Metro host (PC IP).
-if (__DEV__ && (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('10.0.2.2'))) {
+if (
+  __DEV__ &&
+  !DEMO_MODE &&
+  (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('10.0.2.2'))
+) {
   try {
     const Constants = require('expo-constants').default;
     const hostUri = Constants.expoConfig?.hostUri ?? Constants.manifest?.debuggerHost;
@@ -19,21 +28,27 @@ if (__DEV__ && (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('10.
     // expo-constants unavailable; keep existing API_BASE_URL
   }
 }
-// Android emulator only: if still localhost, use 10.0.2.2 so emulator can reach host.
-if (Platform.OS === 'android' && API_BASE_URL.includes('localhost')) {
+if (Platform.OS === 'android' && !DEMO_MODE && API_BASE_URL.includes('localhost')) {
   API_BASE_URL = API_BASE_URL.replace(/localhost/g, '10.0.2.2');
 }
-if (__DEV__) console.log('[NEXA API] Base URL:', API_BASE_URL);
+
+if (__DEV__) {
+  if (DEMO_MODE) {
+    console.log('[GameTrend] Demo mode ON — no requests to', API_BASE_URL);
+  } else {
+    console.log('[NEXA API] Base URL:', API_BASE_URL);
+  }
+}
 
 export { API_BASE_URL };
 const API_TIMEOUT_MS = 25000;
 
 class GameService {
-  // Future backend cache reminder:
-  // Any search bar we add later that can trigger recommendation-like queries
-  // should reuse this same recommendation cache path instead of creating a
-  // separate uncached request flow.
   async getRecommendations(preference, sortBy, filters = {}) {
+    if (DEMO_MODE) {
+      await demoNetworkDelay(340);
+      return getDemoRecommendations(preference, sortBy, filters);
+    }
     try {
       const response = await axios.post(
         `${API_BASE_URL}/recommendations`,
@@ -54,12 +69,11 @@ class GameService {
     }
   }
 
-  // Future backend cache reminder:
-  // Search results, search-bar selections, and detail modals should all flow
-  // through the same normalized game-detail cache strategy (preferably by
-  // internal game ID or normalized title) so we do not refetch the same game
-  // repeatedly through different UI entry points.
   async getGameDetails(title) {
+    if (DEMO_MODE) {
+      await demoNetworkDelay(260);
+      return getDemoGameDetails(title);
+    }
     try {
       const response = await axios.post(
         `${API_BASE_URL}/game-details`,
@@ -78,12 +92,11 @@ class GameService {
     }
   }
 
-  // Future search-bar reminder:
-  // When search UI is added, autocomplete should use short-lived caching by
-  // normalized query prefix. Keep it aligned with the broader
-  // recommendation/detail caching plan rather than treating search as a
-  // standalone uncached feature.
   async igdbAutocomplete(query) {
+    if (DEMO_MODE) {
+      await demoNetworkDelay(120);
+      return getDemoIgdbAutocomplete(query);
+    }
     try {
       const response = await axios.get(`${API_BASE_URL}/igdb-autocomplete`, {
         params: { q: query },

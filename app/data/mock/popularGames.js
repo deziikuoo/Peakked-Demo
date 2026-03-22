@@ -1,8 +1,10 @@
 /**
- * Mock popular games for the Popular tab. Used for layout, UX, and fallback when API is unavailable.
+ * Mock popular games for the Popular tab. Used for layout, UX, and demo/offline mode.
+ * Steam header art reads like production data (same CDN the live backend uses for headers).
  */
 
-const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/460x215/1A1A1D/9CA3AF?text=Game';
+const steamHeader = (appId) =>
+  `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/header.jpg`;
 
 /**
  * Generate 24 hourly player-count points for sparklines.
@@ -193,16 +195,20 @@ export function generateViewHistory30d(viewCount, trend) {
 }
 
 const GAMES_RAW = [
-  { id: '1', name: 'Counter-Strike 2', genre: 'FPS', thumbnail: PLACEHOLDER_IMAGE, playerCount: 1245000, streamCount: 2840, viewCount: 142000, rating: 88, trend: 'rising', events: [{ hourIndex: 6, type: 'update', label: 'Patch notes released' }, { hourIndex: 18, type: 'streamer', label: 'Major streamer went live' }] },
-  { id: '2', name: 'Dota 2', genre: 'MOBA', thumbnail: PLACEHOLDER_IMAGE, playerCount: 892000, streamCount: 1520, viewCount: 76000, rating: 90, trend: 'stable', events: [] },
-  { id: '3', name: 'Baldur\'s Gate 3', genre: 'RPG', thumbnail: PLACEHOLDER_IMAGE, playerCount: 156000, streamCount: 420, viewCount: 21000, rating: 96, trend: 'declining', events: [{ hourIndex: 10, type: 'rating', label: 'Rating crossed 95%' }, { hourIndex: 14, type: 'sale', label: 'Steam weekend sale' }] },
-  { id: '4', name: 'Helldivers 2', genre: 'Action', thumbnail: PLACEHOLDER_IMAGE, playerCount: 142000, streamCount: 680, viewCount: 34000, rating: 87, trend: 'rising', events: [{ hourIndex: 8, type: 'update', label: 'Server patch deployed' }, { hourIndex: 20, type: 'streamer', label: 'xQc started streaming' }] },
-  { id: '5', name: 'Elden Ring', genre: 'RPG', thumbnail: PLACEHOLDER_IMAGE, playerCount: 98000, streamCount: 1120, viewCount: 56000, rating: 96, trend: 'stable', events: [{ hourIndex: 12, type: 'sale', label: 'DLC discount' }] },
-  { id: '6', name: 'Apex Legends', genre: 'Battle Royale', thumbnail: PLACEHOLDER_IMAGE, playerCount: 245000, streamCount: 1890, viewCount: 95000, rating: 84, trend: 'declining', events: [] },
-  { id: '7', name: 'GTA V', genre: 'Open World', thumbnail: PLACEHOLDER_IMAGE, playerCount: 185000, streamCount: 2340, viewCount: 117000, rating: 92, trend: 'rising', events: [{ hourIndex: 16, type: 'streamer', label: 'Big stream event' }, { hourIndex: 22, type: 'sale', label: 'Rockstar sale' }] },
-  { id: '8', name: 'PUBG: Battlegrounds', genre: 'Battle Royale', thumbnail: PLACEHOLDER_IMAGE, playerCount: 420000, streamCount: 760, viewCount: 38000, rating: 82, trend: 'stable', events: [] },
-  { id: '9', name: 'Rust', genre: 'Survival', thumbnail: PLACEHOLDER_IMAGE, playerCount: 78000, streamCount: 540, viewCount: 27000, rating: 85, trend: 'declining', events: [] },
-  { id: '10', name: 'Lost Ark', genre: 'MMO', thumbnail: PLACEHOLDER_IMAGE, playerCount: 52000, streamCount: 120, viewCount: 6000, rating: 79, trend: 'rising', events: [{ hourIndex: 4, type: 'update', label: 'Maintenance completed' }] },
+  { id: '730', name: 'Counter-Strike 2', genre: 'FPS', thumbnail: steamHeader(730), playerCount: 1182400, streamCount: 3120, viewCount: 186400, rating: 88, trend: 'rising', events: [{ hourIndex: 6, type: 'update', label: 'Balance patch live' }, { hourIndex: 19, type: 'streamer', label: 'Major tournament qualifiers' }] },
+  { id: '570', name: 'Dota 2', genre: 'MOBA', thumbnail: steamHeader(570), playerCount: 691200, streamCount: 1380, viewCount: 92100, rating: 90, trend: 'stable', events: [] },
+  { id: '271590', name: 'Grand Theft Auto V', genre: 'Open World', thumbnail: steamHeader(271590), playerCount: 208500, streamCount: 2650, viewCount: 132800, rating: 92, trend: 'rising', events: [{ hourIndex: 16, type: 'streamer', label: 'Roleplay server spike' }, { hourIndex: 22, type: 'sale', label: 'Rockstar storefront promo' }] },
+  { id: '1172470', name: 'Apex Legends', genre: 'Battle Royale', thumbnail: steamHeader(1172470), playerCount: 276800, streamCount: 2040, viewCount: 101200, rating: 84, trend: 'declining', events: [] },
+  { id: '578080', name: 'PUBG: Battlegrounds', genre: 'Battle Royale', thumbnail: steamHeader(578080), playerCount: 398000, streamCount: 790, viewCount: 49800, rating: 82, trend: 'stable', events: [] },
+  { id: '1245620', name: 'Elden Ring', genre: 'RPG', thumbnail: steamHeader(1245620), playerCount: 128400, streamCount: 1040, viewCount: 54800, rating: 96, trend: 'stable', events: [{ hourIndex: 12, type: 'sale', label: 'DLC bundle on sale' }] },
+  { id: '1086940', name: "Baldur's Gate 3", genre: 'RPG', thumbnail: steamHeader(1086940), playerCount: 145200, streamCount: 485, viewCount: 26800, rating: 96, trend: 'declining', events: [{ hourIndex: 10, type: 'rating', label: 'Community awards buzz' }, { hourIndex: 14, type: 'sale', label: 'Steam feature spot' }] },
+  { id: '553850', name: 'Helldivers 2', genre: 'Action', thumbnail: steamHeader(553850), playerCount: 162800, streamCount: 705, viewCount: 36200, rating: 87, trend: 'rising', events: [{ hourIndex: 8, type: 'update', label: 'Hotfix deployed' }, { hourIndex: 20, type: 'streamer', label: 'Co-op trend on Twitch' }] },
+  { id: '1091500', name: 'Cyberpunk 2077', genre: 'RPG', thumbnail: steamHeader(1091500), playerCount: 101200, streamCount: 655, viewCount: 45200, rating: 91, trend: 'rising', events: [{ hourIndex: 15, type: 'update', label: 'Patch notes traction' }] },
+  { id: '252490', name: 'Rust', genre: 'Survival', thumbnail: steamHeader(252490), playerCount: 158600, streamCount: 565, viewCount: 30400, rating: 85, trend: 'stable', events: [] },
+  { id: '1623730', name: 'Palworld', genre: 'Survival', thumbnail: steamHeader(1623730), playerCount: 73800, streamCount: 395, viewCount: 19800, rating: 78, trend: 'declining', events: [] },
+  { id: '730240', name: 'Lost Ark', genre: 'MMO', thumbnail: steamHeader(730240), playerCount: 46800, streamCount: 102, viewCount: 7800, rating: 79, trend: 'rising', events: [{ hourIndex: 4, type: 'update', label: 'Weekly reset' }] },
+  { id: '1938090', name: 'Call of Duty: Black Ops 6', genre: 'FPS', thumbnail: steamHeader(1938090), playerCount: 91200, streamCount: 1180, viewCount: 68900, rating: 83, trend: 'rising', events: [{ hourIndex: 21, type: 'streamer', label: 'Season launch streams' }] },
+  { id: '440', name: 'Team Fortress 2', genre: 'FPS', thumbnail: steamHeader(440), playerCount: 58400, streamCount: 225, viewCount: 11800, rating: 92, trend: 'stable', events: [] },
 ];
 
 export const MOCK_GAMES = GAMES_RAW.map((g) => {
@@ -241,6 +247,11 @@ export function getMockGamesRefreshed() {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
+}
+
+/** Same shape as live `/api/trending`; sorted by concurrent players (demo). */
+export function getTrendingGamesMock() {
+  return [...MOCK_GAMES].sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0));
 }
 
 export default MOCK_GAMES;
