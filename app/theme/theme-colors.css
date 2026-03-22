@@ -1,0 +1,76 @@
+/*
+  ShaqGPT theme color reference – hex values only.
+  Open in editor to see color swatches next to each value.
+*/
+
+/* ========== Arena / Court ========== */
+.arena-background { color: #1C1C1E; }
+.arena-surface { color: #2C2C2E; }
+.arena-primary { color: #E65100; }
+.arena-secondary { color: #FFB300; }
+.arena-accent { color: #FFB300; }
+.arena-text { color: #FFF8E7; }
+.arena-textSecondary { color: #B3A898; }
+.arena-border { color: #3A3A3C; }
+.arena-success { color: #4CAF50; }
+.arena-error { color: #EF5350; }
+
+/* ========== Dark + Neon ========== */
+.darkNeon-background { color: #0D0D0D; }
+.darkNeon-surface { color: #1A1A1D; }
+.darkNeon-primary { color: #FF6B35; }
+.darkNeon-secondary { color: #00D9FF; }
+.darkNeon-accent { color: #FF6B35; }
+.darkNeon-text { color: #F5F5F5; }
+.darkNeon-textSecondary { color: #9CA3AF; }
+.darkNeon-border { color: #27272A; }
+.darkNeon-success { color: #22C55E; }
+.darkNeon-error { color: #EF4444; }
+
+/* ========== Clean / Editorial ========== */
+.cleanEditorial-background { color: #FFFFFF; }
+.cleanEditorial-surface { color: #F8FAFC; }
+.cleanEditorial-primary { color: #0A1628; }
+.cleanEditorial-secondary { color: #64748B; }
+.cleanEditorial-accent { color: #DC2626; }
+.cleanEditorial-text { color: #0F172A; }
+.cleanEditorial-textSecondary { color: #6B7280; }
+.cleanEditorial-border { color: #E2E8F0; }
+.cleanEditorial-success { color: #15803D; }
+.cleanEditorial-error { color: #B91C1C; }
+
+/* ========== Shaq Personality ========== */
+.shaqPersonality-background { color: #0F0F0F; }
+.shaqPersonality-surface { color: #1F1F1F; }
+.shaqPersonality-primary { color: #6B21A8; }
+.shaqPersonality-secondary { color: #EAB308; }
+.shaqPersonality-accent { color: #EAB308; }
+.shaqPersonality-text { color: #FAFAFA; }
+.shaqPersonality-textSecondary { color: #A3A3A3; }
+.shaqPersonality-border { color: #404040; }
+.shaqPersonality-success { color: #16A34A; }
+.shaqPersonality-error { color: #DC2626; }
+
+/* ========== Fresh / Modern ========== */
+.freshModern-background { color: #F1F5F9; }
+.freshModern-surface { color: #FFFFFF; }
+.freshModern-primary { color: #0D9488; }
+.freshModern-secondary { color: #334155; }
+.freshModern-accent { color: #F43F5E; }
+.freshModern-text { color: #0F172A; }
+.freshModern-textSecondary { color: #64748B; }
+.freshModern-border { color: #E2E8F0; }
+.freshModern-success { color: #059669; }
+.freshModern-error { color: #E11D48; }
+
+/* ========== High Contrast ========== */
+.highContrast-background { color: #FFFFFF; }
+.highContrast-surface { color: #FEFCE8; }
+.highContrast-primary { color: #171717; }
+.highContrast-secondary { color: #2563EB; }
+.highContrast-accent { color: #EA580C; }
+.highContrast-text { color: #171717; }
+.highContrast-textSecondary { color: #525252; }
+.highContrast-border { color: #A3A3A3; }
+.highContrast-success { color: #166534; }
+.highContrast-error { color: #991B1B; }

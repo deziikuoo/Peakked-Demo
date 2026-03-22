@@ -1,0 +1,172 @@
+# =============================================================================
+# NEXA Game Recommender - Environment Variables Configuration
+# =============================================================================
+# 
+# This file contains all the environment variables needed to run NEXA.
+# Copy this file to .env and fill in your actual API keys.
+#
+# IMPORTANT: Never commit your actual .env file to version control!
+# This file (.env.example) is safe to commit as it only contains placeholders.
+# =============================================================================
+
+# =============================================================================
+# REQUIRED API KEYS
+# =============================================================================
+
+# OpenAI API Key - Required for AI-powered game recommendations
+# Get your key from: https://platform.openai.com/api-keys
+# This is used for GPT-4o to generate intelligent game suggestions
+OPENAI_API_KEY=your_openai_api_key_here
+
+# RAWG API Key - Required for comprehensive game data
+# Get your key from: https://rawg.io/apidocs
+# This is used for:
+# - Detailed game information (descriptions, screenshots, ratings)
+# - Game search and filtering
+# - Platform, genre, and developer information
+RAWG_API_KEY=your_rawg_api_key_here
+
+# =============================================================================
+# TWITCH API CREDENTIALS (Required for Twitch integration)
+# =============================================================================
+# 
+# Twitch API is used for:
+# - Real-time viewer counts for games
+# - Current gaming trends and popularity data
+# - Live streaming statistics
+#
+# Get your credentials from: https://dev.twitch.tv/console
+# 1. Create a new application
+# 2. Get the Client ID and Client Secret
+# 3. Add them below
+
+TWITCH_CLIENT_ID=your_twitch_client_id_here
+TWITCH_CLIENT_SECRET=your_twitch_client_secret_here
+
+# =============================================================================
+# STEAM API (Popular/Trending games - Layer 2 cache)
+# =============================================================================
+# Get your key from: https://steamcommunity.com/dev/apikey
+# Used for GET /api/trending (current player counts for curated Steam games).
+STEAM_API_KEY=your_steam_api_key_here
+
+# =============================================================================
+# REDIS (Backend cache - Layer 2)
+# =============================================================================
+# Used for caching API responses (trending, game details) to limit external API calls.
+# Redis Cloud free tier: use the connection URL from your Redis Cloud dashboard.
+# Format: rediss://default:YOUR_PASSWORD@YOUR_HOST:PORT (rediss = TLS)
+# Leave empty to run without Redis (cache will be skipped).
+REDIS_URL=
+
+# =============================================================================
+# IGDB API CREDENTIALS (OPTIONAL - Advanced Configuration)
+# =============================================================================
+#
+# ⚠️  IMPORTANT: IGDB API keys are OPTIONAL!
+# 
+# Why IGDB is optional:
+# - IGDB uses the same authentication system as Twitch (OAuth2)
+# - By default, the app will use your Twitch credentials for IGDB calls
+# - This means you only need one set of API keys for both services
+#
+# What IGDB is used for:
+# - Game search autocomplete (the search suggestions as you type)
+# - Alternative game database with different coverage than RAWG
+# - More detailed game metadata in some cases
+#
+# 🎯 BENEFITS OF SEPARATING IGDB AND TWITCH KEYS:
+# 
+# 1. RATE LIMIT MANAGEMENT:
+#    - Twitch and IGDB have separate rate limits
+#    - Using the same key for both services means you're sharing the limit
+#    - Separate keys allow you to use full limits for each service
+#    - Example: If you hit Twitch's limit, IGDB autocomplete still works
+#
+# 2. CREDIT OPTIMIZATION:
+#    - Autocomplete feature can use IGDB credits instead of Twitch
+#    - Preserves Twitch credits for viewer count data (more valuable)
+#    - Better distribution of API usage across services
+#
+# 3. FAILOVER PROTECTION:
+#    - If one service is down, the other can still function
+#    - Reduces dependency on a single API key
+#    - More reliable application performance
+#
+# 4. COST CONTROL:
+#    - Some services offer different pricing tiers
+#    - You can optimize costs by using the most cost-effective service for each feature
+#    - Better tracking of which service is consuming more credits
+#
+# 📊 RATE LIMITS (approximate):
+# - Twitch: 800 requests per minute
+# - IGDB: 4 requests per second (240 per minute)
+# - Using same key: You're limited by the more restrictive limit
+#
+# 🔧 HOW TO SET UP SEPARATE KEYS:
+# 1. Create a separate Twitch application for IGDB
+# 2. Use different Client ID and Secret for IGDB
+# 3. This gives you independent rate limits and quotas
+#
+# 💡 RECOMMENDATION:
+# - For development/testing: Use the same Twitch credentials (easier setup)
+# - For production: Use separate IGDB credentials for better performance
+# - For high-traffic applications: Definitely use separate keys
+
+# IGDB Client ID (Optional - defaults to TWITCH_CLIENT_ID if not set)
+# If you want separate rate limits, create a new Twitch application and use its Client ID here
+IGDB_CLIENT_ID=your_igdb_client_id_here
+
+# IGDB Client Secret (Optional - defaults to TWITCH_CLIENT_SECRET if not set)
+# Use the Client Secret from your IGDB-specific Twitch application
+IGDB_CLIENT_SECRET=your_igdb_client_secret_here
+
+# =============================================================================
+# APPLICATION CONFIGURATION (Optional)
+# =============================================================================
+
+# Server port (default: 8000)
+PORT=8000
+
+# Environment (development/production)
+NODE_ENV=development
+
+# =============================================================================
+# RATE LIMITING CONFIGURATION (Optional)
+# =============================================================================
+# 
+# These settings control how many requests each user can make
+# Adjust based on your API limits and expected usage
+
+# Maximum requests per minute per IP address
+# RATE_LIMIT_REQUESTS=10
+
+# Rate limit window in seconds
+# RATE_LIMIT_WINDOW=60
+
+# =============================================================================
+# CORS CONFIGURATION (Optional)
+# =============================================================================
+# 
+# Comma-separated list of allowed origins for CORS
+# ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
+
+# =============================================================================
+# NOTES FOR DEPLOYMENT
+# =============================================================================
+#
+# Railway Deployment:
+# - Set these environment variables in your Railway project dashboard
+# - Never commit actual API keys to your repository
+# - Use Railway's environment variable management for security
+#
+# Docker Deployment:
+# - Use --env-file .env when running the container
+# - Or set environment variables in docker-compose.yml
+#
+# Local Development:
+# - Copy this file to .env: cp .env.example .env
+# - Fill in your actual API keys
+# - The .env file is already in .gitignore
+#
+# =============================================================================
