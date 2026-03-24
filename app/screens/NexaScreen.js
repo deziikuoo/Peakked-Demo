@@ -104,7 +104,7 @@ export default function NexaScreen() {
               : 'Discover your next favorite game with our advanced AI!'}
           </Text>
           <LinearGradient
-            colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 107, 53, 0.04)']}
+            colors={['rgba(255, 255, 255, 0.06)', 'rgba(26, 255, 26, 0.06)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.badge}

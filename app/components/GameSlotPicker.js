@@ -12,11 +12,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { themes } from "../theme/colors";
 import { formatPlayerCount, getTrend } from "../data/shared/gameFormatters";
 import TrendBadge from "./TrendBadge";
-import GameImage from "./GameImage";
+import GameWideThumbnailImage from "./GameWideThumbnailImage";
 
 const colors = themes.darkNeon;
 
-const SLOT_COLORS = [colors.primary, colors.secondary, colors.success];
+const SLOT_COLORS = [colors.primary, colors.secondary, colors.tertiary];
 
 const localStyles = StyleSheet.create({
   slot: {
@@ -167,10 +167,7 @@ export default function GameSlotPicker({
         <Ionicons name="close" size={14} color="#FFF" />
       </Pressable>
       <View style={localStyles.thumbWrap}>
-        <GameImage
-          source={{ uri: game.thumbnail }}
-          style={localStyles.thumbImage}
-        />
+        <GameWideThumbnailImage game={game} style={localStyles.thumbImage} />
       </View>
       <View style={localStyles.filledBody}>
         <Text style={localStyles.filledName} numberOfLines={2}>

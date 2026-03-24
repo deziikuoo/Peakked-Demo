@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useReducer } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator, BottomTabBar } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from './utils/safeArea';
@@ -15,6 +15,7 @@ import CompareScreen from './screens/CompareScreen';
 import MyGamesScreen from './screens/MyGamesScreen';
 import NexaScreen from './screens/NexaScreen';
 import AppBackground from './components/AppBackground';
+import TabBarBrushedMetalSweep from './components/TabBarBrushedMetalSweep';
 import { GameCacheProvider } from './context/GameCacheContext';
 import { WatchlistProvider, useWatchlist } from './context/WatchlistContext';
 import { themes } from './theme/colors';
@@ -30,6 +31,30 @@ import {
 
 const Tab = createBottomTabNavigator();
 const colors = themes.darkNeon;
+
+function TabBarWithBrushedMetal(props) {
+  const dimsRef = useRef({ w: 0, h: 0 });
+  const [, bumpLayout] = useReducer((n) => n + 1, 0);
+  return (
+    <View
+      style={styles.tabBarScanHost}
+      onLayout={(e) => {
+        const { width, height } = e.nativeEvent.layout;
+        const prev = dimsRef.current;
+        if (width !== prev.w || height !== prev.h) {
+          dimsRef.current = { w: width, h: height };
+          bumpLayout();
+        }
+      }}
+    >
+      <BottomTabBar {...props} />
+      <TabBarBrushedMetalSweep
+        width={dimsRef.current.w}
+        height={dimsRef.current.h}
+      />
+    </View>
+  );
+}
 
 const navTheme = {
   ...DefaultTheme,
@@ -50,6 +75,7 @@ function MainTabs() {
       <AppBackground />
       <View style={styles.tabContent}>
         <Tab.Navigator
+          tabBar={(tabBarProps) => <TabBarWithBrushedMetal {...tabBarProps} />}
           screenOptions={({ navigation }) => ({
             headerShown: false,
             tabBarActiveTintColor: colors.primary,
@@ -169,5 +195,8 @@ const styles = StyleSheet.create({
   },
   transparentScene: {
     backgroundColor: 'transparent',
+  },
+  tabBarScanHost: {
+    position: 'relative',
   },
 });

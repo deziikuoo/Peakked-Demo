@@ -575,7 +575,7 @@ function RecommendationListHeader({
         <View style={s.surpriseBtnRow}>
           <Pressable onPress={onSurpriseMe} style={s.surpriseBtnPressable}>
             <LinearGradient
-              colors={['rgba(255, 107, 53, 0.75)', colors.primary]}
+              colors={['rgba(26, 255, 26, 0.75)', colors.primary]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={s.surpriseBtn}

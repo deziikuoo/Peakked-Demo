@@ -29,10 +29,10 @@ import { useGameCache } from "../context/GameCacheContext";
 import GameSlotPicker from "../components/GameSlotPicker";
 import GameComparisonPicker from "../components/GameComparisonPicker";
 import CompareChartPanel from "../components/CompareChartPanel";
-import GameImage from "../components/GameImage";
+import GameWideThumbnailImage from "../components/GameWideThumbnailImage";
 
 const colors = themes.darkNeon;
-const SLOT_COLORS = [colors.primary, colors.secondary, colors.success];
+const SLOT_COLORS = [colors.primary, colors.secondary, colors.tertiary];
 
 const localStyles = StyleSheet.create({
   screen: {
@@ -440,8 +440,8 @@ export default function CompareScreen() {
               style={[localStyles.winnerBannerGradient, { backgroundColor: winnerColor }]}
             />
             <View style={localStyles.winnerThumb}>
-              <GameImage
-                source={{ uri: winnerGame.thumbnail }}
+              <GameWideThumbnailImage
+                game={winnerGame}
                 style={localStyles.winnerThumbImage}
               />
             </View>

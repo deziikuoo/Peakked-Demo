@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatViewCount } from '../data/shared/gameFormatters';
+import { themes } from '../theme/colors';
 
-const VIEWS_COLOR = '#A855F7';
+const VIEWS_COLOR = themes.darkNeon.views ?? themes.darkNeon.tertiary ?? '#E040FB';
 
 const localStyles = StyleSheet.create({
   pill: {

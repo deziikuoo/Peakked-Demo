@@ -6,7 +6,7 @@ import { formatPlayerCount, getTrend } from '../data/shared/gameFormatters';
 import { MOCK_GAMES } from '../data/mock/popularGames';
 import { getTrendingGames } from '../data/real/popularGamesApi';
 import TrendBadge from './TrendBadge';
-import GameImage from './GameImage';
+import GameWideThumbnailImage from './GameWideThumbnailImage';
 
 const colors = themes.darkNeon;
 
@@ -146,7 +146,7 @@ export default function GameComparisonPicker({ visible, currentGameId, excludeId
                     accessibilityLabel={`Compare with ${g.name}`}
                   >
                     <View style={localStyles.thumb}>
-                      <GameImage source={{ uri: g.thumbnail }} style={localStyles.thumbImage} />
+                      <GameWideThumbnailImage game={g} style={localStyles.thumbImage} />
                     </View>
                     <View style={localStyles.rowBody}>
                       <Text style={localStyles.rowName} numberOfLines={1}>{g.name}</Text>

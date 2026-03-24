@@ -1,5 +1,5 @@
 /**
- * GameTrend theme color variables.
+ * Peakked theme color variables (app-wide; default matches logo palette).
  * Each theme uses the same semantic keys so you can swap themes without changing component code.
  * Usage: import { themes, themeKeys } from './theme/colors';
  *        const colors = themes.arena;  // or themes.darkNeon, etc.
@@ -35,19 +35,24 @@ export const arena = {
 };
 
 /**
- * Dark + Neon – dark UI with bright accents (shared with Compare/Nexa)
+ * Dark + Neon — Peakked logo palette: black, white, #1aff1a + complementary chart colors.
+ * primary = players / brand UI; secondary = streams (cyan); tertiary/views = 3rd metric (magenta).
  */
 export const darkNeon = {
-  background: '#121212',
-  surface: '#1E1E1E',
-  primary: '#FF6B35',
-  secondary: '#00C2FF',
-  accent: '#FF6B35',
-  text: '#F5F5F5',
+  background: '#000000',
+  surface: '#0A0A0A',
+  primary: '#1aff1a',
+  secondary: '#00E5FF',
+  accent: '#1aff1a',
+  text: '#FFFFFF',
   textSecondary: '#9CA3AF',
-  border: '#2E2E2E',
-  success: '#22C55E',
-  error: '#EF4444',
+  border: '#1F1F1F',
+  success: '#5EEB6A',
+  error: '#FF4D5C',
+  /** Compare slot 3 / views sparkline — complements green + cyan */
+  tertiary: '#E040FB',
+  /** Alias for view-count series (detail modal, share card) */
+  views: '#E040FB',
 };
 
 /**

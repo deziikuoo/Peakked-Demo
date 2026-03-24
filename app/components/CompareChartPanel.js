@@ -13,7 +13,7 @@ import MetricToggle from "./MetricToggle";
 import TimeRangeToggle from "./TimeRangeToggle";
 
 const colors = themes.darkNeon;
-const SLOT_COLORS = [colors.primary, colors.secondary, colors.success];
+const SLOT_COLORS = [colors.primary, colors.secondary, colors.tertiary];
 
 const localStyles = StyleSheet.create({
   wrap: {

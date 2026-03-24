@@ -41,10 +41,15 @@ const localStyles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 8,
   },
-  segmentActive: {
+  segmentActive24h: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: colors.success,
+  },
+  segmentActiveOther: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
   segmentInactive: {
     backgroundColor: 'transparent',
@@ -53,8 +58,11 @@ const localStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
-  textActive: {
-    color: '#FFFFFF',
+  textActive24h: {
+    color: colors.success,
+  },
+  textActiveOther: {
+    color: colors.primary,
   },
   textInactive: {
     color: colors.textSecondary,
@@ -71,10 +79,26 @@ export default function TimeRangeToggle({ activeRange = '24h', onToggle }) {
     <View style={localStyles.wrap}>
       {RANGES.map(({ key, label, icon }) => {
         const isActive = activeRange === key;
+        const is24h = key === '24h';
+        const activeBorderStyle = isActive
+          ? is24h
+            ? localStyles.segmentActive24h
+            : localStyles.segmentActiveOther
+          : localStyles.segmentInactive;
+        const activeTextStyle = isActive
+          ? is24h
+            ? localStyles.textActive24h
+            : localStyles.textActiveOther
+          : localStyles.textInactive;
+        const activeIconColor = isActive
+          ? is24h
+            ? colors.success
+            : colors.primary
+          : colors.textSecondary;
         return (
           <Pressable
             key={key}
-            style={[localStyles.segment, isActive ? localStyles.segmentActive : localStyles.segmentInactive]}
+            style={[localStyles.segment, activeBorderStyle]}
             onPress={() => handlePress(key)}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
@@ -83,9 +107,9 @@ export default function TimeRangeToggle({ activeRange = '24h', onToggle }) {
             <Ionicons
               name={icon}
               size={12}
-              color={isActive ? '#FFFFFF' : colors.textSecondary}
+              color={activeIconColor}
             />
-            <Text style={[localStyles.text, isActive ? localStyles.textActive : localStyles.textInactive]}>
+            <Text style={[localStyles.text, activeTextStyle]}>
               {label}
             </Text>
           </Pressable>

@@ -9,6 +9,7 @@ export default function GameImage({
   style,
   contentFit = "cover",
   transition = 200,
+  cachePolicy = "memory-disk",
   ...rest
 }) {
   return (
@@ -17,6 +18,7 @@ export default function GameImage({
       style={style}
       contentFit={contentFit}
       transition={transition}
+      cachePolicy={cachePolicy}
       {...rest}
     />
   );

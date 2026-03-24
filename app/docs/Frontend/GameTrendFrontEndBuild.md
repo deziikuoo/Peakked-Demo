@@ -228,7 +228,7 @@ On-device favorites/watchlist. "My Games" section or filter; watchlisted games s
 - **Persistence:** `getWatchlistIds` / `setWatchlistIds` in `layoutStorage.js` and `layoutStorage.native.js` (same pattern as compare slots).
 - **WatchlistContext** (`app/context/WatchlistContext.js`): Global state with `watchlist` (array of game objects), `isWatched(id)`, `toggleWatch(game)`; loads/saves IDs on mount and on change; resolves IDs to games via `MOCK_GAMES`.
 - **My Games tab:** Fourth tab in `App.js` with heart icon and `tabBarBadge` showing watchlist count; screen is `MyGamesScreen` with list of `WatchlistCard`s.
-- **WatchlistCard** (`app/components/WatchlistCard.js`): Mini-dashboard card with 56×56 thumbnail, game name, TrendBadge, player/stream counts, full-width 24h Sparkline (48px), "Best time" from `computePeakInsights`, "Peak now" pill when applicable, and heart button to remove; tap opens `GameDetailModal`.
+- **WatchlistCard** (`app/components/WatchlistCard.js`): Mini-dashboard card with 56×56 thumbnail, game name, TrendBadge, player/stream counts, full-width 24h Sparkline (48px), "Best time" from `computePeakInsights`, "Peak now" pill when applicable; **Edit** on My Games reveals a top-left green heart to remove from watchlist; tap card opens `GameDetailModal`.
 - **Heart toggles:** Detail modal action row has heart button (filled/outline by watch state); `GameRowCard` has heart in badges row; `GameHeroCard` has heart overlay top-left on image. Filled heart uses `colors.error`; outline uses `colors.textSecondary`.
 
 ---

@@ -1,29 +1,34 @@
 {
   "expo": {
-    "name": "GameTrend",
-    "slug": "gametrend",
+    "name": "Peakked",
+    "slug": "peakked",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Logos/Full Logo.png",
     "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/Logos/Full Logo WO BG.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0D0D0D"
+      "backgroundColor": "#000000"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "backgroundColor": "#000000"
     },
     "android": {
+      "navigationBar": {
+        "backgroundColor": "#000000"
+      },
       "adaptiveIcon": {
-        "backgroundColor": "#1A1A1D",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/Logos/image logo WO BG.png",
+        "backgroundImage": "./assets/Logos/Full Logo.png",
+        "monochromeImage": "./assets/Logos/monochrome logo WO BG.png"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/Logos/Image logo.png"
     },
     "plugins": [
       "expo-secure-store",

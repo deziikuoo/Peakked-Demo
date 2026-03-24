@@ -106,7 +106,7 @@ export default function SparklineScrubbable({
   dualMode = false,
   formatSecondaryValue,
   tertiaryData,
-  tertiaryColor = "#A855F7",
+  tertiaryColor = colors.views ?? colors.tertiary ?? "#E040FB",
   formatTertiaryValue,
   tripleMode = false,
   primaryLabel,
@@ -117,6 +117,7 @@ export default function SparklineScrubbable({
   peakLabelFormatter,
   animationDelayMs,
   animationEnabled,
+  clipBottomRadius = 0,
 }) {
   const [scrubPosition, setScrubPosition] = useState(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
@@ -473,6 +474,7 @@ export default function SparklineScrubbable({
         animated={animated}
         animationDelayMs={animationDelayMs}
         animationEnabled={animationEnabled}
+        clipBottomRadius={clipBottomRadius}
       />
     );
 
@@ -503,6 +505,14 @@ export default function SparklineScrubbable({
       : colors.text;
   const displayTooltipW = lastTooltipRef.current.tooltipW;
 
+  const chartLayerBase = {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width,
+    height,
+  };
+
   return (
     <View
       ref={wrapRef}
@@ -517,19 +527,30 @@ export default function SparklineScrubbable({
       accessibilityLabel="Chart: drag to see player count over time"
       accessibilityRole="none"
     >
-      <Sparkline
-        data={data}
-        width={width}
-        height={height}
-        color={color}
-        animated={animated}
-        peakRegion={peakRegionSvg}
-        animationDelayMs={animationDelayMs}
-        animationEnabled={animationEnabled}
-      />
+      {/*
+        Stack order: markers under dashed overlays under primary.
+        Primary SVG uses pointerEvents="none" so touches reach markers and the parent pan handler.
+        Sparkle/burst render on top of event markers (same theme green as the line).
+      */}
+      <View
+        style={[chartLayerBase, { zIndex: 1 }]}
+        pointerEvents="box-none"
+      >
+        <EventMarkers
+          events={events}
+          points={points}
+          width={width}
+          height={height}
+          scrubPosition={scrubPosition}
+          onMarkerPress={handleMarkerPress}
+        />
+      </View>
       {(dualMode || tripleMode) && hasSecondary && (
         <View
-          style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}
+          style={[
+            chartLayerBase,
+            { zIndex: 2, pointerEvents: "none" },
+          ]}
         >
           <Sparkline
             data={secondaryData}
@@ -538,12 +559,16 @@ export default function SparklineScrubbable({
             color={secondaryColor}
             animated={animated}
             strokeDasharray="4 2"
+            clipBottomRadius={clipBottomRadius}
           />
         </View>
       )}
       {tripleMode && hasTertiary && (
         <View
-          style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}
+          style={[
+            chartLayerBase,
+            { zIndex: 3, pointerEvents: "none" },
+          ]}
         >
           <Sparkline
             data={tertiaryData}
@@ -552,17 +577,28 @@ export default function SparklineScrubbable({
             color={tertiaryColor}
             animated={animated}
             strokeDasharray="2 3"
+            clipBottomRadius={clipBottomRadius}
           />
         </View>
       )}
-      <EventMarkers
-        events={events}
-        points={points}
-        width={width}
-        height={height}
-        scrubPosition={scrubPosition}
-        onMarkerPress={handleMarkerPress}
-      />
+      <View
+        style={[
+          chartLayerBase,
+          { zIndex: 4, pointerEvents: "none" },
+        ]}
+      >
+        <Sparkline
+          data={data}
+          width={width}
+          height={height}
+          color={color}
+          animated={animated}
+          peakRegion={peakRegionSvg}
+          animationDelayMs={animationDelayMs}
+          animationEnabled={animationEnabled}
+          clipBottomRadius={clipBottomRadius}
+        />
+      </View>
       {peakRegionSvg && peakBadgeVisible && (
         <View
           style={{
@@ -572,6 +608,7 @@ export default function SparklineScrubbable({
             width: 140,
             alignItems: "center",
             pointerEvents: "none",
+            zIndex: 5,
           }}
         >
           <View
@@ -612,6 +649,7 @@ export default function SparklineScrubbable({
               width,
               height,
               pointerEvents: "none",
+              zIndex: 6,
             },
             tooltipAnimatedStyle,
           ]}

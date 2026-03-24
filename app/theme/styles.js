@@ -85,8 +85,9 @@ export function createThemedStyles(colors = defaultTheme) {
       fontSize: 16,
       fontWeight: '600',
     },
+    /** Text on neon primary (#1aff1a) — use dark for contrast */
     buttonTextOnPrimary: {
-      color: colors.text,
+      color: colors.background,
       fontSize: 16,
       fontWeight: '600',
     },

@@ -4,9 +4,7 @@ import { colors } from '../../theme/nexaTokens';
 import { spacing } from '../../theme/nexaSpacing';
 import { typography } from '../../theme/nexaTypography';
 import { sharedStyles } from '../../theme/nexaStyles';
-import GameImage from '../GameImage';
-
-const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x200';
+import GameWideThumbnailImage from '../GameWideThumbnailImage';
 
 function NexaGameCard({ game, onViewDetails }) {
   const formatViewerCount = (count) => {
@@ -16,15 +14,10 @@ function NexaGameCard({ game, onViewDetails }) {
     return String(count ?? 0);
   };
 
-  const imageUri = game.background_image || PLACEHOLDER_IMAGE;
-
   return (
     <View style={[sharedStyles.glassPanel, styles.card]}>
       <View style={styles.imageContainer}>
-        <GameImage
-          source={{ uri: imageUri }}
-          style={styles.image}
-        />
+        <GameWideThumbnailImage game={game} style={styles.image} />
         {game.metacritic && game.metacritic !== 'N/A' && (
           <View style={styles.metacriticBadge}>
             <Text style={styles.metacriticText}>{game.metacritic}</Text>

@@ -42,7 +42,7 @@ function withAlpha(hex, alpha) {
 
 /**
  * Overlay of icon dots at event hour positions on the sparkline.
- * Renders below scrub dot, above sparkline. Optional nudge for overlapping markers.
+ * Renders under the chart line in SparklineScrubbable (sparkle draws above). Optional nudge for overlapping markers.
  */
 export default function EventMarkers({ events = [], points = [], width, height, scrubPosition = null, onMarkerPress }) {
   const markersWithPosition = useMemo(() => {

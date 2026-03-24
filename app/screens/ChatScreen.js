@@ -103,7 +103,7 @@ const localStyles = StyleSheet.create({
     color: colors.text,
   },
   bubbleTextUser: {
-    color: '#FFFFFF',
+    color: colors.background,
   },
   inputRow: {
     flexDirection: 'row',
@@ -129,7 +129,7 @@ const localStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendButtonText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -257,7 +257,7 @@ export default function ChatScreen({ route }) {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       <View style={localStyles.header}>
-        <Text style={localStyles.headerTitle}>GameTrend</Text>
+        <Text style={localStyles.headerTitle}>Peakked</Text>
         <Text style={localStyles.headerTagline}>Ask about player counts, streams, and ratings</Text>
       </View>
 

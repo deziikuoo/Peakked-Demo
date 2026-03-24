@@ -10,8 +10,8 @@ import {
   Pressable,
   Modal,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { deferAfterInteractions } from '../utils/deferAfterInteractions';
+import { prefetchRemoteImagesCacheFirst } from '../utils/prefetchRemoteImagesCacheFirst';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from '../utils/safeArea';
 import { createThemedStyles } from '../theme/styles';
 import { themes } from '../theme/colors';
 import { MOCK_GAMES, getMockGamesRefreshed } from '../data/mock/popularGames';
+import { getGameListThumbnailUri } from '../data/shared/gameFormatters';
 import { getTrendingGames } from '../data/real/popularGamesApi';
 import { DEMO_MODE } from '../config/demoMode';
 import { useGameCache } from '../context/GameCacheContext';
@@ -55,6 +56,8 @@ const INITIAL_ANIMATION_MS = 900;
 const INITIAL_NUM_TO_RENDER = 10;
 const MAX_TO_RENDER_PER_BATCH = 10;
 const WINDOW_SIZE = 6;
+// Prevent recycled rows from losing expo-image surfaces during fast scroll on some devices.
+const REMOVE_CLIPPED_SUBVIEWS = false;
 
 const localStyles = StyleSheet.create({
   screen: {
@@ -213,10 +216,18 @@ export default function PopularScreen({ navigation }) {
 
   useEffect(() => {
     if (games.length === 0) return;
-    const urls = games.slice(0, 15).map((g) => g.thumbnail).filter(Boolean);
+    const urls = [
+      ...new Set(
+        games.slice(0, 15).flatMap((g) => {
+          const list = getGameListThumbnailUri(g);
+          const hero = g.thumbnail;
+          return [list, hero].filter(Boolean);
+        })
+      ),
+    ];
     if (urls.length === 0) return;
     const { cancel } = deferAfterInteractions(() => {
-      Image.prefetch(urls);
+      prefetchRemoteImagesCacheFirst(urls);
     }, 'PopularScreen.prefetchThumbnails');
     return () => cancel();
   }, [games]);
@@ -426,7 +437,7 @@ export default function PopularScreen({ navigation }) {
         initialNumToRender={INITIAL_NUM_TO_RENDER}
         maxToRenderPerBatch={MAX_TO_RENDER_PER_BATCH}
         windowSize={WINDOW_SIZE}
-        removeClippedSubviews={true}
+        removeClippedSubviews={REMOVE_CLIPPED_SUBVIEWS}
         refreshControl={refreshControl}
         renderItem={renderHeroRowItem}
       />
@@ -443,7 +454,7 @@ export default function PopularScreen({ navigation }) {
       initialNumToRender={INITIAL_NUM_TO_RENDER}
       maxToRenderPerBatch={MAX_TO_RENDER_PER_BATCH}
       windowSize={WINDOW_SIZE}
-      removeClippedSubviews={true}
+      removeClippedSubviews={REMOVE_CLIPPED_SUBVIEWS}
       refreshControl={refreshControl}
       renderItem={renderRowItem}
     />
@@ -461,7 +472,7 @@ export default function PopularScreen({ navigation }) {
       initialNumToRender={INITIAL_NUM_TO_RENDER}
       maxToRenderPerBatch={MAX_TO_RENDER_PER_BATCH}
       windowSize={WINDOW_SIZE}
-      removeClippedSubviews={true}
+      removeClippedSubviews={REMOVE_CLIPPED_SUBVIEWS}
       refreshControl={refreshControl}
       renderItem={renderGridItem}
     />
@@ -478,7 +489,7 @@ export default function PopularScreen({ navigation }) {
       initialNumToRender={INITIAL_NUM_TO_RENDER}
       maxToRenderPerBatch={MAX_TO_RENDER_PER_BATCH}
       windowSize={WINDOW_SIZE}
-      removeClippedSubviews={true}
+      removeClippedSubviews={REMOVE_CLIPPED_SUBVIEWS}
       refreshControl={refreshControl}
       renderSectionHeader={renderSectionHeader}
       renderItem={renderRowItem}

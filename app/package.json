@@ -5,11 +5,17 @@
   "scripts": {
     "backend": "cd backend && python start.py",
     "check-keys": "node scripts/check-api-keys.js",
-    "start": "expo start",
+    "start": "expo start --port 5172",
+    "start:lan": "expo start --lan --port 5172",
     "start:tunnel": "expo start --tunnel",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo start --lan --android --port 5172",
+    "android:tunnel": "expo start --tunnel --android",
+    "android:lan": "expo start --lan --android --port 5172",
+    "ios": "expo start --ios --port 5172",
+    "web": "expo start --web",
+    "logcat:clear": "adb logcat -c",
+    "logcat:dump": "adb logcat -d",
+    "logcat:dump:file": "node scripts/dump-logcat.js"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -44,6 +50,6 @@
   "private": true,
   "expo": {},
   "devDependencies": {
-    "@expo/ngrok": "^4.1.3"
+    "@expo/ngrok": "4.1.0"
   }
 }

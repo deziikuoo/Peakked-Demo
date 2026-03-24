@@ -19,7 +19,7 @@ const GAP = 6;
 const METRIC_ACTIVE_COLORS = {
   players: null,
   streams: colors.secondary,
-  views: '#A855F7',
+  views: colors.views ?? colors.tertiary ?? '#E040FB',
   all: colors.primary,
 };
 

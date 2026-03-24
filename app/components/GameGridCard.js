@@ -1,30 +1,35 @@
 import { memo } from 'react';
 import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { themes } from '../theme/colors';
-import { formatPlayerCount, formatStreamCount, getTrend } from '../data/shared/gameFormatters';
+import {
+  formatPlayerCount,
+  formatStreamCount,
+  getTrend,
+  trendColor,
+} from '../data/shared/gameFormatters';
+import { useWatchlist } from '../context/WatchlistContext';
+import { useDelayedSingleOrDoubleTap } from '../utils/useDelayedSingleOrDoubleTap';
 import Sparkline, { STAGGER_MS, ANIMATION_CAP } from './Sparkline';
 import TrendBadge from './TrendBadge';
 import ViewsBadge from './ViewsBadge';
-import GameImage from './GameImage';
-
+import GameWideThumbnailImage from './GameWideThumbnailImage';
 const colors = themes.darkNeon;
 
-function trendColor(direction) {
-  if (direction === 'rising') return colors.success;
-  if (direction === 'declining') return colors.error;
-  return colors.textSecondary;
-}
-
 const localStyles = StyleSheet.create({
-  card: {
+  cardWrap: {
     flex: 1,
     minWidth: 0,
-    backgroundColor: colors.surface,
+    margin: 4,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.surface,
     overflow: 'hidden',
-    margin: 4,
+    position: 'relative',
+  },
+  card: {
+    flex: 1,
+    minWidth: 0,
   },
   imageWrap: {
     width: '100%',
@@ -77,15 +82,28 @@ const localStyles = StyleSheet.create({
 
 function GameGridCard({ game, onPress, index, animateSparkline = true }) {
   const { width: winWidth } = useWindowDimensions();
+  const { toggleWatch } = useWatchlist();
   const cardContentWidth = Math.max(0, (winWidth - 72) / 2);
   const history = game.history;
   const trend = history ? getTrend(history) : { direction: 'stable', percentChange: 0 };
   const sparkColor = trendColor(trend.direction);
 
+  const handleCardPress = useDelayedSingleOrDoubleTap(
+    () => onPress?.(game),
+    () => toggleWatch(game)
+  );
+
   return (
-    <Pressable style={localStyles.card} onPress={() => onPress?.(game)} accessibilityRole="button" accessibilityLabel={game.name}>
+    <View style={localStyles.cardWrap}>
+    <Pressable
+      style={localStyles.card}
+      onPress={handleCardPress}
+      accessibilityRole="button"
+      accessibilityLabel={game.name}
+      accessibilityHint="Double tap to add or remove from your liked games"
+    >
       <View style={localStyles.imageWrap}>
-        <GameImage source={{ uri: game.thumbnail }} style={localStyles.image} />
+        <GameWideThumbnailImage game={game} style={localStyles.image} />
         <View style={localStyles.viewsBadgeOverlay}>
           <ViewsBadge viewCount={game.viewCount} />
         </View>
@@ -107,8 +125,9 @@ function GameGridCard({ game, onPress, index, animateSparkline = true }) {
               data={history}
               width={cardContentWidth}
               height={28}
-              color={sparkColor}
+              color={colors.primary}
               animated
+              clipBottomRadius={8}
               animationDelayMs={index != null ? index * STAGGER_MS : 0}
               animationEnabled={animateSparkline && (index == null || index < ANIMATION_CAP)}
             />
@@ -116,6 +135,7 @@ function GameGridCard({ game, onPress, index, animateSparkline = true }) {
         )}
       </View>
     </Pressable>
+    </View>
   );
 }
 

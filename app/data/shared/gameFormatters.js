@@ -3,12 +3,22 @@
  * No mock data; no API calls.
  */
 
+import { themes } from '../../theme/colors';
+
+/** Sparkline / accent color from trend direction (matches darkNeon semantics). */
+export function trendColor(direction) {
+  const c = themes.darkNeon;
+  if (direction === 'rising') return c.success;
+  if (direction === 'declining') return c.error;
+  return c.textSecondary;
+}
+
 /** Event types for timeline markers: icon (Ionicons name) and color (hex). */
 export const EVENT_TYPES = {
-  update: { icon: 'construct', color: '#00D9FF' },
-  streamer: { icon: 'videocam', color: '#FF6B35' },
-  sale: { icon: 'pricetag', color: '#22C55E' },
-  rating: { icon: 'star', color: '#FF6B35' },
+  update: { icon: 'construct', color: '#00E5FF' },
+  streamer: { icon: 'videocam', color: '#00E5FF' },
+  sale: { icon: 'pricetag', color: '#FFE066' },
+  rating: { icon: 'star', color: '#1aff1a' },
 };
 
 /**
@@ -185,4 +195,87 @@ export function isInPeakWindowNow(game) {
   const now = new Date();
   const hour = now.getHours();
   return hour >= pw.startHour && hour <= pw.endHour;
+}
+
+/**
+ * Steam CDN: store header banner (~460×215, landscape). Used in mock/live `thumbnail`
+ * and fits hero/wide slots; with `cover` in a narrow vertical strip it crops heavily.
+ */
+export function steamHeaderImageUrl(appId) {
+  const id = String(appId).trim();
+  return `https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/header.jpg`;
+}
+
+/**
+ * Steam CDN: library portrait (600×900, 2:3). Better for full-height row thumbnails.
+ * Some apps omit this; `GameListThumbnailImage` falls back to `game.thumbnail`, then the app logo asset.
+ */
+export function steamLibraryPortraitUrl(appId) {
+  const id = String(appId).trim();
+  return `https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/library_600x900.jpg`;
+}
+
+/**
+ * URI for tall list-row thumbnails: prefer Steam library portrait when `game.id` is a
+ * numeric Steam app id; otherwise `game.thumbnail` (e.g. RAWG/IGDB URL from backend).
+ */
+export function getGameListThumbnailUri(game) {
+  const id = game?.id;
+  if (id != null && /^\d+$/.test(String(id).trim())) {
+    return steamLibraryPortraitUrl(id);
+  }
+  return game?.thumbnail ?? "";
+}
+
+/**
+ * When the list uses Steam `library_600x900.jpg`, fall back to `game.thumbnail`
+ * (typically `header.jpg`) if portrait is missing. Returns null if there is no
+ * alternate URL.
+ */
+export function getGameListThumbnailFallbackUri(game) {
+  const primary = getGameListThumbnailUri(game);
+  const thumb = game?.thumbnail ?? "";
+  if (!thumb || thumb === primary) return null;
+  return thumb;
+}
+
+/**
+ * First non-empty wide-art URL: `thumbnail`, or NEXA-style `background_image`, or Steam header from id.
+ */
+function gameWidePrimaryField(game) {
+  return (game?.thumbnail ?? game?.background_image ?? "").trim();
+}
+
+/**
+ * URI for landscape / hero / grid / modal art: prefer stored thumbnail (or `background_image`),
+ * else Steam `header.jpg` when `game.id` is a numeric app id.
+ */
+export function getGameWideThumbnailUri(game) {
+  const thumb = gameWidePrimaryField(game);
+  if (thumb) return thumb;
+  const id = game?.id;
+  if (id != null && /^\d+$/.test(String(id).trim())) {
+    return steamHeaderImageUrl(id);
+  }
+  return "";
+}
+
+/**
+ * Next Steam CDN candidate after the wide primary (e.g. header → portrait) for failed loads.
+ */
+export function getGameWideThumbnailFallbackUri(game) {
+  const thumb = gameWidePrimaryField(game);
+  const id = game?.id;
+  const steamId =
+    id != null && /^\d+$/.test(String(id).trim()) ? String(id).trim() : null;
+  const header = steamId ? steamHeaderImageUrl(steamId) : "";
+  const portrait = steamId ? steamLibraryPortraitUrl(steamId) : "";
+  const chain = [];
+  if (thumb) chain.push(thumb);
+  if (header && !chain.includes(header)) chain.push(header);
+  if (portrait && !chain.includes(portrait)) chain.push(portrait);
+  const primary = getGameWideThumbnailUri(game);
+  const i = chain.indexOf(primary);
+  if (i >= 0 && i < chain.length - 1) return chain[i + 1];
+  return null;
 }

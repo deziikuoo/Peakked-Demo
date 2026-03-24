@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo } from "react";
 import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { themes } from '../theme/colors';
@@ -6,16 +6,10 @@ import { formatPlayerCount, formatStreamCount, getTrend } from '../data/shared/g
 import SparklineScrubbable from './SparklineScrubbable';
 import TrendBadge from './TrendBadge';
 import ViewsBadge from './ViewsBadge';
-import { useWatchlist } from '../context/WatchlistContext';
-import GameImage from './GameImage';
-
+import { useWatchlist } from "../context/WatchlistContext";
+import { useDelayedSingleOrDoubleTap } from "../utils/useDelayedSingleOrDoubleTap";
+import GameWideThumbnailImage from "./GameWideThumbnailImage";
 const colors = themes.darkNeon;
-
-function trendColor(direction) {
-  if (direction === 'rising') return colors.success;
-  if (direction === 'declining') return colors.error;
-  return colors.textSecondary;
-}
 
 const localStyles = StyleSheet.create({
   card: {
@@ -33,17 +27,18 @@ const localStyles = StyleSheet.create({
     backgroundColor: colors.border,
     position: 'relative',
   },
+  /** Shown only when liked — top-left, matches row cards */
   heartOverlay: {
     position: 'absolute',
     top: 10,
-    right: 10,
+    left: 10,
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: 2,
   },
   image: {
     width: '100%',
@@ -105,22 +100,28 @@ function GameHeroCard({ game, onPress, animateSparkline = true }) {
   const hasRating = game.rating != null;
   const history = game.history;
   const trend = history ? getTrend(history) : { direction: 'stable', percentChange: 0 };
-  const sparkColor = trendColor(trend.direction);
+  const isLiked = getDisplayWatched(game.id);
 
   const onHeartPress = (e) => {
     e?.stopPropagation?.();
     toggleWatch(game);
   };
 
+  const handleCardPress = useDelayedSingleOrDoubleTap(
+    () => onPress?.(game),
+    () => toggleWatch(game)
+  );
+
   return (
     <View style={localStyles.card}>
       <Pressable
-        onPress={() => onPress?.(game)}
+        onPress={handleCardPress}
         accessibilityRole="button"
         accessibilityLabel={`${game.name}, ${formatPlayerCount(game.playerCount)} players`}
+        accessibilityHint="Double tap to add or remove from your liked games"
       >
         <View style={localStyles.imageWrap}>
-          <GameImage source={{ uri: game.thumbnail }} style={localStyles.image} />
+          <GameWideThumbnailImage game={game} style={localStyles.image} />
         </View>
         <View style={localStyles.badgesRow}>
           <ViewsBadge viewCount={game.viewCount} />
@@ -137,7 +138,17 @@ function GameHeroCard({ game, onPress, animateSparkline = true }) {
           </View>
           {history && history.length > 0 && (
             <View style={localStyles.sparklineWrap}>
-              <SparklineScrubbable data={history} width={contentWidth} height={48} color={sparkColor} animated formatValue={formatPlayerCount} events={game.events ?? []} animationEnabled={animateSparkline} />
+              <SparklineScrubbable
+                data={history}
+                width={contentWidth}
+                height={48}
+                color={colors.primary}
+                animated
+                formatValue={formatPlayerCount}
+                events={game.events ?? []}
+                animationEnabled={animateSparkline}
+                clipBottomRadius={10}
+              />
             </View>
           )}
           <View style={localStyles.ratingAndBadgeRow}>
@@ -150,18 +161,16 @@ function GameHeroCard({ game, onPress, animateSparkline = true }) {
           </View>
         </View>
       </Pressable>
-      <Pressable
-        style={localStyles.heartOverlay}
-        onPress={onHeartPress}
-        accessibilityRole="button"
-        accessibilityLabel={getDisplayWatched(game.id) ? 'Remove from watchlist' : 'Add to watchlist'}
-      >
-        <Ionicons
-          name={getDisplayWatched(game.id) ? 'heart' : 'heart-outline'}
-          size={20}
-          color={getDisplayWatched(game.id) ? colors.error : '#FFF'}
-        />
-      </Pressable>
+      {isLiked && (
+        <Pressable
+          style={localStyles.heartOverlay}
+          onPress={onHeartPress}
+          accessibilityRole="button"
+          accessibilityLabel="Remove from watchlist"
+        >
+          <Ionicons name="heart" size={20} color={colors.primary} />
+        </Pressable>
+      )}
     </View>
   );
 }

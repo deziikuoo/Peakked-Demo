@@ -1,9 +1,9 @@
 /**
- * Chart animation uses Reanimated (worklets, shared values) so draw and sparkle
- * run on the UI thread. On web, path draw animation is disabled due to
- * react-native-svg setNativeProps limitations.
+ * Chart animation: Reanimated + AnimatedPath on native. On web, Reanimated SVG
+ * stroke-dash props are unreliable, so we use requestAnimationFrame + plain Path
+ * and a lightweight SVG sparkle/burst (see enableWebDraw).
  */
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState, useId } from "react";
 import { Platform } from "react-native";
 import Animated, {
   useSharedValue,
@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
   withDelay,
   runOnJS,
+  Easing,
 } from "react-native-reanimated";
 import Svg, {
   Path,
@@ -25,11 +26,13 @@ import Svg, {
   Ellipse,
   G,
   Polygon,
+  ClipPath,
 } from "react-native-svg";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 const SPARKLE_DRAW_MS = 800;
+const SPARKLE_FADE_MS = 380;
 const BURST_MS = 320;
 const SPARKLE_ROTATION_MS = 2000;
 const PRIMARY_RAY_LEN = 13;
@@ -62,6 +65,13 @@ export function getPoints(data, width, height) {
   });
 }
 
+/** SVG clip: sharp top, rounded bottom corners only */
+function bottomRoundedClipPathD(w, h, r) {
+  const rad = Math.min(Math.max(0, r), w / 2, h / 2);
+  if (rad <= 0) return `M 0 0 L ${w} 0 L ${w} ${h} L 0 ${h} Z`;
+  return `M 0 0 L ${w} 0 L ${w} ${h - rad} Q ${w} ${h} ${w - rad} ${h} L ${rad} ${h} Q 0 ${h} 0 ${h - rad} L 0 0 Z`;
+}
+
 function getSparklePos(points, progress) {
   if (!points || points.length < 2) return null;
   const revealed = 1 - progress;
@@ -84,7 +94,10 @@ export default function Sparkline({
   peakRegion,
   animationDelayMs = 0,
   animationEnabled = true,
+  /** Rounds bottom-left & bottom-right of chart only (SVG clip); 0 = off */
+  clipBottomRadius = 0,
 }) {
+  const clipUid = useId().replace(/:/g, "");
   const pathMemo = useMemo(() => {
     const points = getPoints(data, width, height);
     if (points.length < 2)
@@ -105,11 +118,17 @@ export default function Sparkline({
 
   const { linePath, areaPath, pathLength: totalLength, points } = pathMemo;
   const isWeb = Platform.OS === "web";
-  const useDrawAnimation =
-    !strokeDasharray &&
-    animated &&
-    animationEnabled &&
-    !isWeb;
+  const enableNativeDraw =
+    !strokeDasharray && animated && animationEnabled && !isWeb;
+  const enableWebDraw =
+    !strokeDasharray && animated && animationEnabled && isWeb;
+
+  const [webDrawProgress, setWebDrawProgress] = useState(1);
+  const [webBurstT, setWebBurstT] = useState(1);
+  const [webBurstPos, setWebBurstPos] = useState(null);
+  /** After draw completes, fade white spark out (web); burst runs when fade ends */
+  const [webSparkleFadeOut, setWebSparkleFadeOut] = useState(null);
+  const webAnimGenRef = useRef(0);
 
   const drawProgress = useSharedValue(1);
   const sparkleCx = useSharedValue(0);
@@ -128,6 +147,7 @@ export default function Sparkline({
   pointsRef.current = points;
 
   const updateSparkleFromProgress = (progress) => {
+    if (isWeb) return;
     const pts = pointsRef.current;
     if (!pts || pts.length < 2) return;
     const elapsed = Date.now() - startTsRef.current;
@@ -154,7 +174,7 @@ export default function Sparkline({
   }));
 
   useEffect(() => {
-    if (!useDrawAnimation || !linePath || points.length < 2 || !totalLength)
+    if (!enableNativeDraw || !linePath || points.length < 2 || !totalLength)
       return;
 
     startTsRef.current = Date.now();
@@ -179,8 +199,18 @@ export default function Sparkline({
           { duration: SPARKLE_DRAW_MS },
           (finished) => {
             if (finished) {
-              sparkleOpacity.value = 0;
-              burstT.value = withTiming(0, { duration: BURST_MS });
+              sparkleOpacity.value = withTiming(
+                0,
+                {
+                  duration: SPARKLE_FADE_MS,
+                  easing: Easing.out(Easing.cubic),
+                },
+                (fadeDone) => {
+                  if (fadeDone) {
+                    burstT.value = withTiming(0, { duration: BURST_MS });
+                  }
+                }
+              );
             }
           }
         )
@@ -188,11 +218,116 @@ export default function Sparkline({
     };
     runDraw();
   }, [
-    useDrawAnimation,
+    enableNativeDraw,
     totalLength,
     points.length,
     animationDelayMs,
     animationEnabled,
+  ]);
+
+  /** Web: drive stroke-dashoffset + burst with rAF (no AnimatedPath). */
+  useEffect(() => {
+    if (!enableWebDraw || !linePath || points.length < 2 || !totalLength) {
+      setWebDrawProgress(1);
+      setWebBurstT(1);
+      setWebBurstPos(null);
+      setWebSparkleFadeOut(null);
+      return;
+    }
+    const gen = ++webAnimGenRef.current;
+    let rafId = 0;
+    let startTs = null;
+    const delay = animationDelayMs;
+    const duration = SPARKLE_DRAW_MS;
+
+    const step = (ts) => {
+      if (gen !== webAnimGenRef.current) return;
+      if (startTs === null) startTs = ts;
+      const elapsed = ts - startTs;
+      if (elapsed < delay) {
+        rafId = requestAnimationFrame(step);
+        return;
+      }
+      const u = Math.min(1, (elapsed - delay) / duration);
+      const eased = 1 - (1 - u) * (1 - u);
+      const progress = 1 - eased;
+      setWebDrawProgress(progress);
+      if (u < 1) {
+        rafId = requestAnimationFrame(step);
+      } else {
+        setWebDrawProgress(0);
+        const endPos = getSparklePos(pointsRef.current, 0);
+        const runBurst = () => {
+          if (!endPos) {
+            setWebBurstT(1);
+            return;
+          }
+          setWebBurstPos(endPos);
+          let bStart = null;
+          const burstStep = (bt) => {
+            if (gen !== webAnimGenRef.current) return;
+            if (bStart === null) bStart = bt;
+            const be = bt - bStart;
+            const btU = Math.min(1, be / BURST_MS);
+            setWebBurstT(1 - btU);
+            if (btU < 1) requestAnimationFrame(burstStep);
+            else {
+              setWebBurstT(0);
+              setWebBurstPos(null);
+            }
+          };
+          requestAnimationFrame(burstStep);
+        };
+        if (endPos) {
+          setWebSparkleFadeOut({
+            cx: endPos.cx,
+            cy: endPos.cy,
+            opacity: 0.95,
+          });
+          let fadeStart = null;
+          const fadeStep = (bt) => {
+            if (gen !== webAnimGenRef.current) return;
+            if (fadeStart === null) fadeStart = bt;
+            const fe = bt - fadeStart;
+            const fu = Math.min(1, fe / SPARKLE_FADE_MS);
+            const opacity = 0.95 * (1 - fu);
+            if (opacity > 0.02) {
+              setWebSparkleFadeOut({
+                cx: endPos.cx,
+                cy: endPos.cy,
+                opacity,
+              });
+              requestAnimationFrame(fadeStep);
+            } else {
+              setWebSparkleFadeOut(null);
+              runBurst();
+            }
+          };
+          requestAnimationFrame(fadeStep);
+        } else {
+          runBurst();
+        }
+      }
+    };
+    setWebDrawProgress(1);
+    setWebBurstT(1);
+    setWebBurstPos(null);
+    setWebSparkleFadeOut(null);
+    rafId = requestAnimationFrame(step);
+    return () => {
+      webAnimGenRef.current += 1;
+      cancelAnimationFrame(rafId);
+    };
+  }, [
+    enableWebDraw,
+    totalLength,
+    points.length,
+    animationDelayMs,
+    animationEnabled,
+    linePath,
+    data,
+    width,
+    height,
   ]);
 
   useAnimatedReaction(
@@ -215,9 +350,19 @@ export default function Sparkline({
   };
 
   const colorClean = color.replace("#", "");
+  const clipId = `spark-clip-${clipUid}`;
+  const clipD =
+    clipBottomRadius > 0
+      ? bottomRoundedClipPathD(width, height, clipBottomRadius)
+      : null;
 
   return (
-    <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+    <Svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      pointerEvents="none"
+    >
       <Defs>
         <LinearGradient
           id={`sparkline-fill-${colorClean}`}
@@ -229,7 +374,7 @@ export default function Sparkline({
           <Stop offset="0" stopColor={color} stopOpacity="0.15" />
           <Stop offset="1" stopColor={color} stopOpacity="0" />
         </LinearGradient>
-        {useDrawAnimation && (
+        {(enableNativeDraw || enableWebDraw) && (
           <>
             <RadialGradient
               id={`sparkle-halo-${colorClean}`}
@@ -275,7 +420,13 @@ export default function Sparkline({
             </RadialGradient>
           </>
         )}
+        {clipD && (
+          <ClipPath id={clipId}>
+            <Path d={clipD} />
+          </ClipPath>
+        )}
       </Defs>
+      <G clipPath={clipD ? `url(#${clipId})` : undefined}>
       <Path d={areaPath} fill={`url(#sparkline-fill-${colorClean})`} />
       {peakRegion && (
         <>
@@ -329,12 +480,20 @@ export default function Sparkline({
           />
         </>
       )}
-      {strokeDasharray || !useDrawAnimation ? (
+      {strokeDasharray ? (
         <Path {...pathProps} />
-      ) : (
+      ) : enableWebDraw ? (
+        <Path
+          {...pathProps}
+          strokeDasharray={`${totalLength}`}
+          strokeDashoffset={webDrawProgress * (totalLength || 1)}
+        />
+      ) : enableNativeDraw ? (
         <AnimatedPath {...pathProps} animatedProps={animatedPathProps} />
+      ) : (
+        <Path {...pathProps} />
       )}
-      {useDrawAnimation && (
+      {enableNativeDraw && (
         <SparkleGroup
           colorClean={colorClean}
           sparkleCx={sparkleCx}
@@ -347,7 +506,7 @@ export default function Sparkline({
           color={color}
         />
       )}
-      {useDrawAnimation && (
+      {enableNativeDraw && (
         <BurstGroup
           colorClean={colorClean}
           burstCx={burstCx}
@@ -355,7 +514,117 @@ export default function Sparkline({
           burstT={burstT}
         />
       )}
+      {enableWebDraw && webSparkleFadeOut && (
+        <WebSparkleAtEnd
+          cx={webSparkleFadeOut.cx}
+          cy={webSparkleFadeOut.cy}
+          opacity={webSparkleFadeOut.opacity}
+          colorClean={colorClean}
+        />
+      )}
+      {enableWebDraw && webDrawProgress > 0 && !webSparkleFadeOut && (
+        <WebSparkleOverlay
+          progress={webDrawProgress}
+          points={points}
+          colorClean={colorClean}
+        />
+      )}
+      {enableWebDraw && webBurstPos && webBurstT > 0 && (
+        <WebBurstOverlay
+          cx={webBurstPos.cx}
+          cy={webBurstPos.cy}
+          burstT={webBurstT}
+          colorClean={colorClean}
+        />
+      )}
+      </G>
     </Svg>
+  );
+}
+
+/** Web: sparkle held at line end while opacity fades out */
+function WebSparkleAtEnd({ cx, cy, opacity, colorClean }) {
+  if (opacity <= 0.01) return null;
+  return (
+    <G opacity={opacity}>
+      <Circle
+        cx={cx}
+        cy={cy}
+        r={10}
+        fill={`url(#sparkle-trail-${colorClean})`}
+      />
+      <Circle
+        cx={cx}
+        cy={cy}
+        r={14}
+        fill={`url(#sparkle-halo-${colorClean})`}
+      />
+      <Circle
+        cx={cx}
+        cy={cy}
+        r={4.5}
+        fill={`url(#sparkle-core-${colorClean})`}
+      />
+      <Circle cx={cx} cy={cy} r={1.5} fill="#FFFFFF" />
+    </G>
+  );
+}
+
+/** Web: static SVG sparkle following draw progress (rAF-driven state). */
+function WebSparkleOverlay({ progress, points, colorClean }) {
+  const pos = getSparklePos(points, progress);
+  if (!pos) return null;
+  return (
+    <G opacity={0.95}>
+      <Circle
+        cx={pos.cx}
+        cy={pos.cy}
+        r={10}
+        fill={`url(#sparkle-trail-${colorClean})`}
+      />
+      <Circle
+        cx={pos.cx}
+        cy={pos.cy}
+        r={14}
+        fill={`url(#sparkle-halo-${colorClean})`}
+      />
+      <Circle
+        cx={pos.cx}
+        cy={pos.cy}
+        r={4.5}
+        fill={`url(#sparkle-core-${colorClean})`}
+      />
+      <Circle cx={pos.cx} cy={pos.cy} r={1.5} fill="#FFFFFF" />
+    </G>
+  );
+}
+
+/** Web: burst flash at line end (matches native BurstGroup ellipse + core feel). */
+function WebBurstOverlay({ cx, cy, burstT, colorClean }) {
+  const t = burstT;
+  const eased = 1 - (1 - t) ** 3;
+  const ovalW = 2 + eased * 16;
+  const ovalH = 1 + eased * 4;
+  const flashOpacity = Math.max(0, 1 - t * 1.6);
+  const coreOpacity = Math.max(0, 1 - t * 2.5);
+  return (
+    <G>
+      <Ellipse
+        cx={cx}
+        cy={cy}
+        rx={ovalH}
+        ry={ovalW}
+        fill={`url(#burst-flash-${colorClean})`}
+        opacity={flashOpacity}
+      />
+      <Circle
+        cx={cx}
+        cy={cy}
+        r={2.5}
+        fill="#FFFFFF"
+        fillOpacity={coreOpacity}
+      />
+    </G>
   );
 }
 

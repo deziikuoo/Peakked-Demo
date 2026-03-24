@@ -23,10 +23,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: 2,
     marginBottom: 4,
   },
   accent: {
@@ -56,9 +56,9 @@ export default function SplashScreen({ onFadeComplete }) {
   return (
     <AnimatedView style={[styles.container, { paddingTop: insets.top }, animatedStyle]}>
       <Text style={styles.title}>
-        Game<Text style={styles.accent}>Trend</Text>
+        PEAK<Text style={styles.accent}>KED</Text>
       </Text>
-      <Text style={styles.tagline}>Live player counts, streams, and ratings</Text>
+      <Text style={styles.tagline}>Power the charts.</Text>
     </AnimatedView>
   );
 }

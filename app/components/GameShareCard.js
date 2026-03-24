@@ -6,9 +6,10 @@ import {
   formatPlayerCount,
   formatStreamCount,
   formatViewCount,
+  trendColor,
 } from "../data/shared/gameFormatters";
 import Sparkline from "./Sparkline";
-import GameImage from "./GameImage";
+import GameWideThumbnailImage from "./GameWideThumbnailImage";
 
 const colors = themes.darkNeon;
 const CARD_W = 400;
@@ -18,15 +19,9 @@ const IMAGE_H = 180;
 const CHART_W = CARD_W - PADDING * 2;
 const CHART_H = 80;
 
-const PLAYERS_COLOR = colors.success;
+const PLAYERS_COLOR = colors.primary;
 const STREAMS_COLOR = colors.secondary;
-const VIEWS_COLOR = "#A855F7";
-
-function trendColor(direction) {
-  if (direction === "rising") return colors.success;
-  if (direction === "declining") return colors.error;
-  return colors.textSecondary;
-}
+const VIEWS_COLOR = colors.views ?? colors.tertiary ?? "#E040FB";
 
 function trendIcon(direction) {
   if (direction === "rising") return "trending-up";
@@ -55,8 +50,10 @@ const GameShareCard = React.forwardRef(function GameShareCard(
     return { direction: dir, percentChange: pct };
   })();
 
-  const lineColor = chartColor || trendColor(trend.direction);
-  const trendBg = `${lineColor}26`;
+  /** Chart line matches app neon green; trend pill keeps semantic rise/fall colors. */
+  const chartLineColor = chartColor ?? PLAYERS_COLOR;
+  const trendAccentColor = trendColor(trend.direction);
+  const trendBg = `${trendAccentColor}26`;
   const trendLabel =
     trend.direction === "stable"
       ? "0.0%"
@@ -67,10 +64,7 @@ const GameShareCard = React.forwardRef(function GameShareCard(
   return (
     <View ref={ref} style={styles.card}>
       <View style={styles.imageWrap}>
-        <GameImage
-          source={{ uri: game.thumbnail }}
-          style={styles.image}
-        />
+        <GameWideThumbnailImage game={game} style={styles.image} />
         <View style={styles.gradient} />
       </View>
 
@@ -108,7 +102,7 @@ const GameShareCard = React.forwardRef(function GameShareCard(
             data={game.history}
             width={CHART_W}
             height={CHART_H}
-            color={lineColor}
+            color={chartLineColor}
             animated={false}
             peakRegion={peakRegion}
           />
@@ -119,9 +113,9 @@ const GameShareCard = React.forwardRef(function GameShareCard(
             <Ionicons
               name={trendIcon(trend.direction)}
               size={14}
-              color={lineColor}
+              color={trendAccentColor}
             />
-            <Text style={[styles.trendText, { color: lineColor }]}>
+            <Text style={[styles.trendText, { color: trendAccentColor }]}>
               {trendLabel}
             </Text>
           </View>
@@ -141,7 +135,7 @@ const GameShareCard = React.forwardRef(function GameShareCard(
       </View>
 
       <View style={styles.brandingFooter}>
-        <Text style={styles.brandingText}>GameTrend</Text>
+        <Text style={styles.brandingText}>Peakked</Text>
       </View>
     </View>
   );

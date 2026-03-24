@@ -1,7 +1,38 @@
 /*
-  ShaqGPT theme color reference – hex values only.
+  Theme color reference – hex values only.
   Open in editor to see color swatches next to each value.
 */
+
+/* ========== Peakked (logo) — canonical brand ==========
+   Core: black #000000, white #FFFFFF, neon green #1aff1a.
+   Sparklines / multi-series: use logo green (players), electric cyan (streams),
+   magenta (views) so each reads clearly on black without clashing.
+   JS default theme `themes.darkNeon` is aligned with these tokens.
+*/
+.peakked-black { color: #000000; }
+.peakked-white { color: #FFFFFF; }
+.peakked-green { color: #1aff1a; }
+.peakked-background { color: #000000; }
+.peakked-surface { color: #0A0A0A; }
+.peakked-surfaceElevated { color: #141414; }
+.peakked-primary { color: #1aff1a; }
+.peakked-secondary { color: #00E5FF; }
+.peakked-tertiary { color: #E040FB; }
+.peakked-views { color: #E040FB; }
+.peakked-accent { color: #1aff1a; }
+.peakked-text { color: #FFFFFF; }
+.peakked-textSecondary { color: #9CA3AF; }
+.peakked-border { color: #1F1F1F; }
+.peakked-success { color: #5EEB6A; }
+.peakked-error { color: #FF4D5C; }
+.peakked-warning { color: #FFE066; }
+/* Sparkline roles (complement logo green) */
+.peakked-sparklinePlayers { color: #1aff1a; }
+.peakked-sparklineStreams { color: #00E5FF; }
+.peakked-sparklineViews { color: #E040FB; }
+.peakked-sparklineCompare { color: #E040FB; }
+.peakked-sparklinePeak { color: #5EEB6A; }
+.peakked-sparklineMuted { color: #525252; }
 
 /* ========== Arena / Court ========== */
 .arena-background { color: #1C1C1E; }
@@ -15,17 +46,17 @@
 .arena-success { color: #4CAF50; }
 .arena-error { color: #EF5350; }
 
-/* ========== Dark + Neon ========== */
-.darkNeon-background { color: #0D0D0D; }
-.darkNeon-surface { color: #1A1A1D; }
-.darkNeon-primary { color: #FF6B35; }
-.darkNeon-secondary { color: #00D9FF; }
-.darkNeon-accent { color: #FF6B35; }
-.darkNeon-text { color: #F5F5F5; }
+/* ========== Dark + Neon (Peakked logo — app default) ========== */
+.darkNeon-background { color: #000000; }
+.darkNeon-surface { color: #0A0A0A; }
+.darkNeon-primary { color: #1aff1a; }
+.darkNeon-secondary { color: #00E5FF; }
+.darkNeon-accent { color: #1aff1a; }
+.darkNeon-text { color: #FFFFFF; }
 .darkNeon-textSecondary { color: #9CA3AF; }
-.darkNeon-border { color: #27272A; }
-.darkNeon-success { color: #22C55E; }
-.darkNeon-error { color: #EF4444; }
+.darkNeon-border { color: #1F1F1F; }
+.darkNeon-success { color: #5EEB6A; }
+.darkNeon-error { color: #FF4D5C; }
 
 /* ========== Clean / Editorial ========== */
 .cleanEditorial-background { color: #FFFFFF; }

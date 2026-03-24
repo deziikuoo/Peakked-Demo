@@ -77,14 +77,14 @@ const localStyles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: colors.primary,
     minHeight: 40,
     backgroundColor: 'transparent',
   },
   clearText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.primary,
   },
 });
 
@@ -146,7 +146,7 @@ export default function GenreFilterBar({
           accessibilityRole="button"
           accessibilityLabel="Clear all genre filters"
         >
-          <Ionicons name="close-circle-outline" size={18} color="#FFFFFF" />
+          <Ionicons name="close-circle-outline" size={18} color={colors.primary} />
           <Text style={localStyles.clearText}>Clear</Text>
         </Pressable>
       )}

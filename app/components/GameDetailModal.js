@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,14 @@ import {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSpring,
+  runOnJS,
 } from "react-native-reanimated";
+import {
+  GestureDetector,
+  Gesture,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 import { AnimatedView } from "../utils/animatedViews";
 import { Ionicons } from "@expo/vector-icons";
 import { captureRef } from "react-native-view-shot";
@@ -38,17 +45,15 @@ import GameComparisonPicker from "./GameComparisonPicker";
 import GameShareCard from "./GameShareCard";
 import PeakTimePanel from "./PeakTimePanel";
 import { useWatchlist } from "../context/WatchlistContext";
-import GameImage from "./GameImage";
+import { useDoubleTapOnly } from "../utils/useDoubleTapOnly";
+import GameWideThumbnailImage from "./GameWideThumbnailImage";
 
 const colors = themes.darkNeon;
 
-function trendColor(direction) {
-  if (direction === "rising") return colors.success;
-  if (direction === "declining") return colors.error;
-  return colors.textSecondary;
-}
-
 const localStyles = StyleSheet.create({
+  backdropPressable: {
+    ...StyleSheet.absoluteFillObject,
+  },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -70,6 +75,11 @@ const localStyles = StyleSheet.create({
     aspectRatio: 460 / 215,
     backgroundColor: colors.border,
     position: "relative",
+  },
+  /** Catch double-tap to like (below close / heart / compare controls) */
+  heroTapLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
   },
   image: {
     width: "100%",
@@ -144,7 +154,7 @@ const localStyles = StyleSheet.create({
     borderRadius: 10,
   },
   askButtonText: {
-    color: "#FFFFFF",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -157,23 +167,24 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  /** Shown only when liked — top-left, matches list / hero cards */
   heartOnImage: {
     position: "absolute",
-    bottom: 12,
-    left: 12,
+    top: 10,
+    left: 10,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.4)",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1,
+    zIndex: 3,
   },
   compareBtnOnImage: {
     position: "absolute",
     bottom: 12,
     right: 12,
-    zIndex: 1,
+    zIndex: 2,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -188,7 +199,7 @@ const localStyles = StyleSheet.create({
     position: "absolute",
     bottom: 12,
     right: 12,
-    zIndex: 1,
+    zIndex: 2,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -208,7 +219,7 @@ const localStyles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1,
+    zIndex: 3,
   },
   metricToggleWrap: {
     marginTop: 8,
@@ -332,6 +343,9 @@ export default function GameDetailModal({
     };
   }, []);
   const { getDisplayWatched, toggleWatch } = useWatchlist();
+  const handleHeroDoubleTap = useDoubleTapOnly(() => {
+    if (game) toggleWatch(game);
+  });
   const modalContentWidth = Math.min(winWidth - 48, 400) - 40;
 
   const handleMetricChange = (metric) => {
@@ -345,7 +359,7 @@ export default function GameDetailModal({
   };
 
   const COMPARISON_COLOR = colors.primary;
-  const VIEWS_COLOR = "#A855F7";
+  const VIEWS_COLOR = colors.views ?? colors.tertiary ?? "#E040FB";
   const hasRating = game?.rating != null;
   const history = game?.history ?? null;
   const streamHistory = game?.streamHistory ?? null;
@@ -356,7 +370,8 @@ export default function GameDetailModal({
   const trend = history
     ? getTrend(history)
     : { direction: "stable", percentChange: 0 };
-  const sparkColor = trendColor(trend.direction);
+  /** Player sparkline + sparkle use brand neon green (not trend-based). */
+  const playerLineColor = colors.primary;
 
   const rangeData = useMemo(() => {
     if (!game) return { players: null, streams: null, views: null };
@@ -468,7 +483,7 @@ export default function GameDetailModal({
         const dataUrl = canvas.toDataURL("image/png");
         const link = document.createElement("a");
         link.href = dataUrl;
-        link.download = `${game.name.replace(/\s+/g, "_")}_GameTrend.png`;
+        link.download = `${game.name.replace(/\s+/g, "_")}_Peakked.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -481,7 +496,7 @@ export default function GameDetailModal({
         if (await Sharing.isAvailableAsync()) {
           await Sharing.shareAsync(uri, {
             mimeType: "image/png",
-            dialogTitle: `${game.name} - GameTrend`,
+            dialogTitle: `${game.name} - Peakked`,
           });
         }
       }
@@ -524,20 +539,79 @@ export default function GameDetailModal({
     }
   }, [visible, overlayOpacity]);
 
+  /** Swipe any direction on the detail card to dismiss */
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      translateX.value = 0;
+      translateY.value = 0;
+    }
+  }, [visible, translateX, translateY]);
+
+  const dismissFromSwipe = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .onUpdate((e) => {
+          translateX.value = e.translationX;
+          translateY.value = e.translationY;
+        })
+        .onEnd((e) => {
+          const dist = Math.hypot(e.translationX, e.translationY);
+          const speed = Math.hypot(e.velocityX, e.velocityY);
+          const DISMISS_DISTANCE = 64;
+          const DISMISS_VELOCITY = 850;
+          if (dist > DISMISS_DISTANCE || speed > DISMISS_VELOCITY) {
+            translateX.value = 0;
+            translateY.value = 0;
+            runOnJS(dismissFromSwipe)();
+            return;
+          }
+          translateX.value = withSpring(0, { damping: 18, stiffness: 260 });
+          translateY.value = withSpring(0, { damping: 18, stiffness: 260 });
+        }),
+    [dismissFromSwipe, translateX, translateY]
+  );
+
+  const cardDragStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+    ],
+  }));
+
   if (!game) return null;
+
+  const isLiked = getDisplayWatched(game.id);
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <AnimatedView style={[localStyles.overlay, overlayAnimatedStyle]}>
-      <Pressable style={{ flex: 1 }} onPress={onClose}>
-        <Pressable
-          style={localStyles.card}
-          onPress={(e) => e.stopPropagation()}
-        >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AnimatedView style={[localStyles.overlay, overlayAnimatedStyle]}>
+          <Pressable
+            style={localStyles.backdropPressable}
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss dialog"
+          />
+          <GestureDetector gesture={panGesture}>
+            <AnimatedView
+              style={[localStyles.card, cardDragStyle]}
+              accessibilityViewIsModal
+            >
           <View style={localStyles.imageWrap}>
-            <GameImage
-              source={{ uri: game.thumbnail }}
-              style={localStyles.image}
+            <GameWideThumbnailImage game={game} style={localStyles.image} />
+            <Pressable
+              style={localStyles.heroTapLayer}
+              onPress={handleHeroDoubleTap}
+              accessibilityRole="button"
+              accessibilityLabel="Game artwork"
+              accessibilityHint="Double tap to add or remove from your liked games"
             />
             <Pressable
               style={localStyles.closeButton}
@@ -546,18 +620,16 @@ export default function GameDetailModal({
             >
               <Ionicons name="close" size={22} color="#FFF" />
             </Pressable>
-            <Pressable
-              style={localStyles.heartOnImage}
-              onPress={() => game && toggleWatch(game)}
-              accessibilityRole="button"
-              accessibilityLabel={getDisplayWatched(game?.id) ? "Remove from watchlist" : "Add to watchlist"}
-            >
-              <Ionicons
-                name={getDisplayWatched(game?.id) ? "heart" : "heart-outline"}
-                size={22}
-                color={getDisplayWatched(game?.id) ? colors.error : "#FFF"}
-              />
-            </Pressable>
+            {isLiked && (
+              <Pressable
+                style={localStyles.heartOnImage}
+                onPress={() => toggleWatch(game)}
+                accessibilityRole="button"
+                accessibilityLabel="Remove from watchlist"
+              >
+                <Ionicons name="heart" size={22} color={colors.primary} />
+              </Pressable>
+            )}
             {history && history.length > 0 && activeMetric !== "all" && !comparisonGame && (
               <Pressable
                 style={localStyles.compareBtnOnImage}
@@ -624,7 +696,7 @@ export default function GameDetailModal({
                   <MetricToggle
                     activeMetric={activeMetric}
                     onToggle={handleMetricChange}
-                    playersActiveColor={sparkColor}
+                    playersActiveColor={playerLineColor}
                   />
                 </View>
                 <View style={localStyles.rangeToggleWrap}>
@@ -639,7 +711,7 @@ export default function GameDetailModal({
                       data={currentPlayerData}
                       width={modalContentWidth}
                       height={64}
-                      color={sparkColor}
+                      color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
                       formatTimeLabel={rangeTimeFormatter}
@@ -689,7 +761,7 @@ export default function GameDetailModal({
                       data={currentPlayerData}
                       width={modalContentWidth}
                       height={64}
-                      color={sparkColor}
+                      color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
                       formatTimeLabel={rangeTimeFormatter}
@@ -739,7 +811,7 @@ export default function GameDetailModal({
                       data={currentPlayerData}
                       width={modalContentWidth}
                       height={64}
-                      color={sparkColor}
+                      color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
                       formatTimeLabel={rangeTimeFormatter}
@@ -764,7 +836,7 @@ export default function GameDetailModal({
                       data={currentPlayerData}
                       width={modalContentWidth}
                       height={64}
-                      color={sparkColor}
+                      color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
                       formatTimeLabel={rangeTimeFormatter}
@@ -792,7 +864,7 @@ export default function GameDetailModal({
                       <View
                         style={[
                           localStyles.legendDot,
-                          { backgroundColor: sparkColor },
+                          { backgroundColor: playerLineColor },
                         ]}
                       />
                       <Text style={localStyles.legendText}>Players</Text>
@@ -826,7 +898,7 @@ export default function GameDetailModal({
                           {
                             backgroundColor:
                               activeMetric === "players"
-                                ? sparkColor
+                                ? playerLineColor
                                 : activeMetric === "streams"
                                   ? colors.secondary
                                   : VIEWS_COLOR,
@@ -871,7 +943,7 @@ export default function GameDetailModal({
                 accessibilityRole="button"
                 accessibilityLabel="Ask in Chat"
               >
-                <Ionicons name="chatbubbles" size={20} color="#FFF" />
+                <Ionicons name="chatbubbles" size={20} color={colors.background} />
                 <Text style={localStyles.askButtonText}>Ask in Chat</Text>
               </Pressable>
               <Pressable
@@ -893,8 +965,8 @@ export default function GameDetailModal({
               </Pressable>
             </View>
           </View>
-        </Pressable>
-      </Pressable>
+            </AnimatedView>
+          </GestureDetector>
       <View
         ref={shareCardRef}
         style={{
@@ -907,7 +979,7 @@ export default function GameDetailModal({
         <GameShareCard
           game={game}
           peakRegion={sharePeakRegion}
-          chartColor={sparkColor}
+          chartColor={playerLineColor}
         />
       </View>
       <GameComparisonPicker
@@ -919,7 +991,8 @@ export default function GameDetailModal({
         }}
         onClose={() => setPickerVisible(false)}
       />
-      </AnimatedView>
+        </AnimatedView>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

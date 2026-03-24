@@ -8,9 +8,10 @@ import {
   StyleSheet,
   FlatList,
   Pressable,
+  Modal,
 } from "react-native";
-import { Image } from "expo-image";
 import { deferAfterInteractions } from "../utils/deferAfterInteractions";
+import { prefetchRemoteImagesCacheFirst } from "../utils/prefetchRemoteImagesCacheFirst";
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -98,6 +99,74 @@ const localStyles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
   },
+  emptyTextHeart: {
+    color: colors.primary,
+    fontWeight: "600",
+  },
+  /** Remove-all confirmation */
+  confirmOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  confirmCard: {
+    width: "100%",
+    maxWidth: 340,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.text,
+    marginBottom: 10,
+  },
+  confirmBody: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: 22,
+  },
+  confirmActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "flex-end",
+  },
+  confirmBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    minWidth: 108,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  confirmBtnCancel: {
+    backgroundColor: colors.border + "55",
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  confirmBtnCancelText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.text,
+  },
+  confirmBtnDanger: {
+    backgroundColor: colors.error + "22",
+    borderWidth: 1,
+    borderColor: colors.error + "88",
+  },
+  confirmBtnDangerText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.error,
+  },
 });
 
 function EmptyState() {
@@ -116,11 +185,14 @@ function EmptyState() {
     <View style={localStyles.emptyWrap}>
       <View style={localStyles.emptyHeartWrap}>
         <AnimatedView style={pulseStyle}>
-          <Ionicons name="heart-outline" size={64} color={colors.textSecondary} />
+          <Ionicons name="heart-outline" size={64} color={colors.primary} />
         </AnimatedView>
       </View>
       <Text style={localStyles.emptyText}>
-        No games watched yet.{"\n"}Tap ♡ on any game to add it here.
+        No games watched yet.{"\n"}Tap{" "}
+        <Text style={localStyles.emptyTextHeart}>♡</Text>
+        {" "}
+        on any game to add it here.
       </Text>
     </View>
   );
@@ -156,12 +228,13 @@ export default function MyGamesScreen() {
     const urls = watchlist.slice(0, 15).map((g) => g.thumbnail).filter(Boolean);
     if (urls.length === 0) return;
     const { cancel } = deferAfterInteractions(() => {
-      Image.prefetch(urls);
+      prefetchRemoteImagesCacheFirst(urls);
     }, "MyGamesScreen.prefetchThumbnails");
     return () => cancel();
   }, [watchlist]);
   const [detailVisible, setDetailVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [removeAllModalVisible, setRemoveAllModalVisible] = useState(false);
 
   const openDetail = useCallback((game) => {
     setSelectedGame(game);
@@ -182,9 +255,18 @@ export default function MyGamesScreen() {
     []
   );
 
-  const handleRemoveAll = useCallback(() => {
+  const closeRemoveAllModal = useCallback(() => {
+    setRemoveAllModalVisible(false);
+  }, []);
+
+  const openRemoveAllModal = useCallback(() => {
+    setRemoveAllModalVisible(true);
+  }, []);
+
+  const confirmRemoveAllFavorites = useCallback(() => {
     clearWatchlist();
     setIsEditMode(false);
+    setRemoveAllModalVisible(false);
   }, [clearWatchlist]);
 
   const renderItem = useCallback(
@@ -226,7 +308,7 @@ export default function MyGamesScreen() {
           {watchlist.length > 0 && isEditMode && (
             <Pressable
               style={[localStyles.headerBtn, localStyles.headerBtnDanger]}
-              onPress={handleRemoveAll}
+              onPress={openRemoveAllModal}
               accessibilityRole="button"
               accessibilityLabel="Remove all games"
             >
@@ -243,8 +325,11 @@ export default function MyGamesScreen() {
         renderItem={renderItem}
         ListEmptyComponent={listEmpty}
         extraData={watchlist.length}
+        scrollEnabled={watchlist.length > 0}
+        bounces={watchlist.length > 0}
+        alwaysBounceVertical={false}
         contentContainerStyle={
-          watchlist.length === 0 ? { flex: 1 } : localStyles.listContent
+          watchlist.length === 0 ? { flexGrow: 1 } : localStyles.listContent
         }
       />
       <GameDetailModal
@@ -253,6 +338,55 @@ export default function MyGamesScreen() {
         onClose={closeDetail}
         onAskInChat={askInChat}
       />
+
+      <Modal
+        visible={removeAllModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeRemoveAllModal}
+        statusBarTranslucent
+      >
+        <Pressable
+          style={localStyles.confirmOverlay}
+          onPress={closeRemoveAllModal}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss dialog"
+        >
+          <Pressable
+            style={localStyles.confirmCard}
+            onPress={(e) => e.stopPropagation()}
+            accessibilityViewIsModal
+            accessibilityRole="none"
+          >
+            <Text style={localStyles.confirmTitle}>Remove all favorites?</Text>
+            <Text style={localStyles.confirmBody}>
+              Are you sure you want to remove all{" "}
+              {watchlist.length === 1
+                ? "favorited game"
+                : `${watchlist.length} favorited games`}{" "}
+              from My Games? This can’t be undone.
+            </Text>
+            <View style={localStyles.confirmActions}>
+              <Pressable
+                style={[localStyles.confirmBtn, localStyles.confirmBtnCancel]}
+                onPress={closeRemoveAllModal}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel, keep all games"
+              >
+                <Text style={localStyles.confirmBtnCancelText}>No, keep them</Text>
+              </Pressable>
+              <Pressable
+                style={[localStyles.confirmBtn, localStyles.confirmBtnDanger]}
+                onPress={confirmRemoveAllFavorites}
+                accessibilityRole="button"
+                accessibilityLabel="Yes, remove all favorited games"
+              >
+                <Text style={localStyles.confirmBtnDangerText}>Remove all</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

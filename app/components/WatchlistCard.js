@@ -26,15 +26,9 @@ import {
 import Sparkline from "./Sparkline";
 import TrendBadge from "./TrendBadge";
 import { useWatchlist } from "../context/WatchlistContext";
-import GameImage from "./GameImage";
+import GameWideThumbnailImage from "./GameWideThumbnailImage";
 
 const colors = themes.darkNeon;
-
-function trendColor(direction) {
-  if (direction === "rising") return colors.success;
-  if (direction === "declining") return colors.error;
-  return colors.textSecondary;
-}
 
 const localStyles = StyleSheet.create({
   card: {
@@ -51,10 +45,6 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    paddingRight: 12,
-  },
-  rowWithHeart: {
-    paddingRight: 44,
   },
   thumb: {
     width: 56,
@@ -89,16 +79,18 @@ const localStyles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "600",
   },
+  /** My Games: only visible in Edit mode — top-left, matches Popular row cards */
   heartBtn: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    top: 8,
+    left: 8,
     width: 36,
     height: 36,
     borderRadius: 18,
+    backgroundColor: "rgba(0,0,0,0.4)",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1,
+    zIndex: 2,
   },
   sparklineWrap: {
     paddingHorizontal: 12,
@@ -166,7 +158,6 @@ function WatchlistCard({ game, onPress, index, showHeart = false }) {
 
   const history = game.history;
   const trend = history ? getTrend(history) : { direction: "stable", percentChange: 0 };
-  const sparkColor = trendColor(trend.direction);
   const peakInsights = computePeakInsights(game);
   const bestTimeLabel = peakInsights?.daily?.label ?? null;
   const showPeakNow = isInPeakWindowNow(game);
@@ -183,9 +174,9 @@ function WatchlistCard({ game, onPress, index, showHeart = false }) {
         accessibilityRole="button"
         accessibilityLabel={game.name}
       >
-        <View style={[localStyles.row, showHeart && localStyles.rowWithHeart]}>
+        <View style={localStyles.row}>
           <View style={localStyles.thumb}>
-            <GameImage source={{ uri: game.thumbnail }} style={localStyles.image} />
+            <GameWideThumbnailImage game={game} style={localStyles.image} />
           </View>
           <View style={localStyles.body}>
             <Text style={localStyles.name} numberOfLines={1}>
@@ -209,8 +200,9 @@ function WatchlistCard({ game, onPress, index, showHeart = false }) {
               data={history}
               width={contentWidth}
               height={48}
-              color={sparkColor}
+              color={colors.primary}
               animated
+              clipBottomRadius={10}
               animationDelayMs={0}
               animationEnabled={false}
             />
@@ -233,7 +225,7 @@ function WatchlistCard({ game, onPress, index, showHeart = false }) {
           accessibilityRole="button"
           accessibilityLabel="Remove from watchlist"
         >
-          <Ionicons name="heart" size={22} color={colors.error} />
+          <Ionicons name="heart" size={20} color={colors.primary} />
         </Pressable>
       )}
     </View>

@@ -23,10 +23,10 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: 2,
     marginBottom: 4,
   },
   accent: {
@@ -49,9 +49,9 @@ export default function LoadingScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.card}>
         <Text style={styles.title}>
-          Game<Text style={styles.accent}>Trend</Text>
+          PEAK<Text style={styles.accent}>KED</Text>
         </Text>
-        <Text style={styles.tagline}>Live player counts, streams, and ratings</Text>
+        <Text style={styles.tagline}>Power the charts.</Text>
         <ActivityIndicator
           size="large"
           color={colors.primary}

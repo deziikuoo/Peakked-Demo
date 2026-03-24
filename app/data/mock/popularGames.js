@@ -206,7 +206,7 @@ const GAMES_RAW = [
   { id: '1091500', name: 'Cyberpunk 2077', genre: 'RPG', thumbnail: steamHeader(1091500), playerCount: 101200, streamCount: 655, viewCount: 45200, rating: 91, trend: 'rising', events: [{ hourIndex: 15, type: 'update', label: 'Patch notes traction' }] },
   { id: '252490', name: 'Rust', genre: 'Survival', thumbnail: steamHeader(252490), playerCount: 158600, streamCount: 565, viewCount: 30400, rating: 85, trend: 'stable', events: [] },
   { id: '1623730', name: 'Palworld', genre: 'Survival', thumbnail: steamHeader(1623730), playerCount: 73800, streamCount: 395, viewCount: 19800, rating: 78, trend: 'declining', events: [] },
-  { id: '730240', name: 'Lost Ark', genre: 'MMO', thumbnail: steamHeader(730240), playerCount: 46800, streamCount: 102, viewCount: 7800, rating: 79, trend: 'rising', events: [{ hourIndex: 4, type: 'update', label: 'Weekly reset' }] },
+  { id: '1599340', name: 'Lost Ark', genre: 'MMO', thumbnail: steamHeader(1599340), playerCount: 46800, streamCount: 102, viewCount: 7800, rating: 79, trend: 'rising', events: [{ hourIndex: 4, type: 'update', label: 'Weekly reset' }] },
   { id: '1938090', name: 'Call of Duty: Black Ops 6', genre: 'FPS', thumbnail: steamHeader(1938090), playerCount: 91200, streamCount: 1180, viewCount: 68900, rating: 83, trend: 'rising', events: [{ hourIndex: 21, type: 'streamer', label: 'Season launch streams' }] },
   { id: '440', name: 'Team Fortress 2', genre: 'FPS', thumbnail: steamHeader(440), playerCount: 58400, streamCount: 225, viewCount: 11800, rating: 92, trend: 'stable', events: [] },
 ];
