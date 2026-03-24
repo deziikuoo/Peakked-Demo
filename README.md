@@ -1,0 +1,160 @@
+<!--
+  PEAKKED — README TEMPLATE
+  Replace all [brackets] and remove this comment block when you publish.
+-->
+
+<div align="center">
+
+# Peakked
+
+### Discover what’s trending in games — players, streams, and discovery in one place.
+
+[![Expo](https://img.shields.io/badge/Expo-SDK%2055-000020?style=flat&logo=expo&logoColor=white)](https://expo.dev/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.83-61DAFB?style=flat&logo=react&logoColor=black)](https://reactnative.dev/)
+[![License](https://img.shields.io/badge/license-[YOUR_LICENSE]-blue.svg)](#license)
+
+**[YOUR_TAGLINE — one line, e.g. “A mobile hub for game popularity and AI-assisted discovery.”]**
+
+<br />
+
+<!-- HERO: paths below are relative to repository root (GitHub homepage) -->
+<p align="center">
+  <img src="app/assets/Logos/Full%20Logo%20WO%20BG.png" alt="Peakked app hero" width="85%" />
+  <br />
+  <sub><em>Swap the file in <code>app/assets/Logos/</code> or change <code>src</code> above.</em></sub>
+</p>
+
+</div>
+
+---
+
+## What is Peakked?
+
+**Peakked** is a cross-platform mobile app (built with **Expo** / **React Native**) focused on **game popularity**, **comparison**, and **discovery**. It brings together ideas you’d expect from a “trending games” experience. Live-style stats presentation, layouts for browsing, and a Ai focused (Nexa Ai) gaming recommendations — in a single installable demo.
+
+This repository is a **work-in-progress** by an **independent developer**. It is shared to showcase UI/UX direction, architecture choices, and roadmap — not as a finished commercial product (yet).
+
+---
+
+## About the developer
+
+|             |                                                                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**    | _[Dawan Rashad Wright - Sensophy]_                                                                                                                  |
+| **Role**    | _Indie developer — design, product, and engineering_                                                                                                |
+| **Links**   | _[Github](https://github.com/deziikuoo) · [LinkedIn](https://www.linkedin.com/in/dawan-wright/) · [ByMeACoffe](https://buymeacoffee.com/deziikuoo)_ |
+| **Contact** | _[ifdawanprintqualified14@gmail.com]_                                                                                                               |
+
+---
+
+## Screenshots
+
+GIFs live under `app/assets/gifs/` (paths below are relative to the **repository root** so they render on GitHub).
+
+|               Home / Popular                |          NEXA discovery          |            Compare / detail            |
+| :-----------------------------------------: | :------------------------------: | :------------------------------------: |
+| ![Popular tab](app/assets/gifs/populargif.gif)  | ![NEXA](app/assets/gifs/nexagif.gif) | ![Compare](app/assets/gifs/comparegif.gif) |
+| _Caption: trending-style list & sparklines_ |    _Caption: filters & cards_    |    _Caption: side-by-side metrics_     |
+
+<p align="center">
+  <sub>On GitHub, use <code>/</code> in image paths, not Windows <code>\</code>.</sub>
+</p>
+
+---
+
+## Tech stack
+
+| Layer                  | Choices                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| **App**                | Expo ~55, React Native, React Navigation                                            |
+| **UI**                 | Custom theming, Reanimated, Skia where used, `expo-image` for cached remote art     |
+| **Data (demo)**        | In-app mocks + optional FastAPI backend when demo mode is off                       |
+| **Backend (optional)** | Python / FastAPI — recommendations, RAWG, Twitch, Steam trending _(see `app/backend/`)_ |
+
+---
+
+## Getting started
+
+From the **repository root**:
+
+```bash
+cd app
+npm install
+npx expo start
+```
+
+- **Android:** press `a` or **`npm run android`** (uses **LAN**; same Wi‑Fi as your PC).
+- **iOS (macOS):** press `i` or `npm run ios`
+- **Expo Go:** scan the QR code. Use **`npm run android:tunnel`** / **`npx expo start --tunnel`** only when you need a public URL (different network, hotel Wi‑Fi, etc.).
+
+### If you see `Tunnel URL not found` then `reading 'body'` (tunnel crash)
+
+Expo tried **ngrok**, couldn’t get a tunnel URL, fell back, and the CLI can still throw. **Your app is fine.**
+
+**Fastest fix (phone + PC on same Wi‑Fi):** do **not** pass `--tunnel`. Use:
+
+```bash
+cd app
+npm run android
+# or
+npx expo start --lan --android
+```
+
+**If you really need a tunnel:** run `npm install` in `app/` (this repo pins **`@expo/ngrok@4.1.0`**, which avoids some CLI crashes), add an [ngrok authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) (`ngrok config add-authtoken <token>`), then try `npm run android:tunnel` again. Check [ngrok status](https://status.ngrok.com/). Free port **8081** or use e.g. `--port 8082` if something else is using 8081.
+
+Copy `app/.env.example` → `app/.env` when you move off demo mode.
+
+---
+
+## Roadmap & future goals
+
+_Prioritize and dates are yours to fill in — below is a sensible default structure._
+
+- [ ] **Live data** — Wire Popular / Compare to stable APIs (Steam, Twitch, aggregators) with caching and rate limits.
+- [ ] **Time series** — Real 24h / 7d / 30d history for sparklines and “peak time” insights.
+- [ ] **NEXA production** — Secure API keys, prompt/tool design, and cost-aware recommendation pipeline.
+- [ ] **Accounts & sync** — Optional sign-in and cloud watchlist (e.g. Firebase / custom backend).
+- [ ] **Chat** — Intent + tools (player counts, streams, compare) backed by your stack of choice.
+- [ ] **Store readiness** — EAS Build, icons, privacy policy, analytics, crash reporting.
+- [ ] **Your idea** — _[e.g. widgets, Wear OS glance, Steam Deck–friendly web]_
+
+---
+
+## Project layout (high level)
+
+```
+app/
+├── App.js                 # Entry & navigation
+├── config/                # e.g. demo mode flags
+├── components/            # Shared UI + NEXA components
+├── screens/               # Tab screens
+├── data/mock/             # Demo datasets
+├── services/api/          # Client for backend (bypassed in demo)
+└── backend/               # Optional FastAPI service (separate run)
+```
+
+---
+
+## License
+
+_[Choose one: e.g. MIT, “All rights reserved”, or “Source available — no license granted”]_
+
+**Copyright (c) [YEAR] [YOUR NAME OR STUDIO]**
+
+---
+
+## Acknowledgments
+
+- _[Game data / imagery: e.g. “Header art loads from public Steam CDN URLs for demo purposes only.”]_
+- _[Libraries: Expo, React Native, and authors of key dependencies — see package.json.]_
+- _[Anyone you want to thank.]_
+
+---
+
+<div align="center">
+
+**Built with innovation and curiosity by Dawan Wright — thanks for checking it out!**
+
+[⭐ Star this repo](https://github.com/deziikuoo/Peakked-Demo) · _[Add website when ready]_
+
+</div>
