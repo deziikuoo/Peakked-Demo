@@ -32,6 +32,9 @@ import {
 const Tab = createBottomTabNavigator();
 const colors = themes.darkNeon;
 
+/** Web demo: fixed portrait width (~Pixel Pro XL logical CSS px, e.g. 9/10 Pro XL class). */
+const WEB_DEMO_MAX_WIDTH = 430;
+
 function TabBarWithBrushedMetal(props) {
   const dimsRef = useRef({ w: 0, h: 0 });
   const [, bumpLayout] = useReducer((n) => n + 1, 0);
@@ -144,6 +147,14 @@ function MainTabs() {
   );
 }
 
+function WebDemoFrame({ children }) {
+  return (
+    <View style={styles.webChrome}>
+      <View style={[styles.webPhone, styles.webPhoneShadow]}>{children}</View>
+    </View>
+  );
+}
+
 export default function App() {
   const [phase, setPhase] = useState('splash'); // 'splash' | 'loading' | 'ready'
 
@@ -157,16 +168,15 @@ export default function App() {
 
   const handleSplashFadeComplete = useCallback(() => setPhase('ready'), []);
 
-  return (
-    <GestureHandlerRootView style={styles.appRoot}>
-      <SafeAreaProvider>
-        <StatusBar style="light" />
-        {phase === 'splash' && (
-          <SplashScreen onFadeComplete={handleSplashFadeComplete} />
-        )}
-        {phase === 'ready' && (
-          <GameCacheProvider>
-            <WatchlistProvider>
+  const appBody = (
+    <>
+      <StatusBar style="light" />
+      {phase === 'splash' && (
+        <SplashScreen onFadeComplete={handleSplashFadeComplete} />
+      )}
+      {phase === 'ready' && (
+        <GameCacheProvider>
+          <WatchlistProvider>
             <NavigationContainer theme={navTheme}>
               {nexaFontsLoaded ? (
                 <MainTabs />
@@ -176,9 +186,16 @@ export default function App() {
                 </View>
               )}
             </NavigationContainer>
-            </WatchlistProvider>
-          </GameCacheProvider>
-        )}
+          </WatchlistProvider>
+        </GameCacheProvider>
+      )}
+    </>
+  );
+
+  return (
+    <GestureHandlerRootView style={styles.appRoot}>
+      <SafeAreaProvider>
+        {Platform.OS === 'web' ? <WebDemoFrame>{appBody}</WebDemoFrame> : appBody}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -186,6 +203,28 @@ export default function App() {
 
 const styles = StyleSheet.create({
   appRoot: { flex: 1 },
+  webChrome: {
+    flex: 1,
+    width: '100%',
+    minHeight: '100vh',
+    alignItems: 'center',
+    backgroundColor: '#070708',
+  },
+  webPhone: {
+    flex: 1,
+    width: '100%',
+    maxWidth: WEB_DEMO_MAX_WIDTH,
+    minHeight: '100vh',
+    overflow: 'hidden',
+    backgroundColor: colors.background,
+  },
+  webPhoneShadow:
+    Platform.OS === 'web'
+      ? {
+          boxShadow:
+            '0 0 0 1px rgba(255,255,255,0.07), 0 20px 80px rgba(0,0,0,0.75)',
+        }
+      : {},
   tabsWrapper: {
     flex: 1,
     backgroundColor: colors.background,
