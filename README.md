@@ -51,7 +51,7 @@ GIFs live under `app/assets/gifs/` (paths below are relative to the **repository
 |                 Home / Popular                 |            NEXA discovery            |              Compare / detail              |
 | :--------------------------------------------: | :----------------------------------: | :----------------------------------------: |
 | ![Popular tab](app/assets/gifs/populargif.gif) | ![NEXA](app/assets/gifs/nexagif.gif) | ![Compare](app/assets/gifs/comparegif.gif) |
-|  _Caption: trending-style list & sparklines_   |      _Caption: filters & cards_      |      _Caption: side-by-side metrics_       |
+|  _Trending-style list & sparklines_   |      _Filters & cards_      |      _Side-by-side metrics_       |
 
 <p align="center">
   <sub>On GitHub, use <code>/</code> in image paths, not Windows <code>\</code>.</sub>
@@ -152,6 +152,6 @@ _[Choose one: e.g. MIT, “All rights reserved”, or “Source available — no
 
 **Built with innovation and curiosity by Dawan Wright — thanks for checking it out!**
 
-[⭐ Star this repo](https://github.com/deziikuoo/Peakked-Demo) · _[Add website when ready]_
+[⭐ Star this repo](https://github.com/deziikuoo/Peakked-Demo) · [GitHub](https://github.com/deziikuoo) · [LinkedIn](https://www.linkedin.com/in/dawan-wright/) · [Buy me a coffee](https://buymeacoffee.com/deziikuoo)
 
 </div>
