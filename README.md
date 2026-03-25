@@ -1,19 +1,14 @@
-<!--
-  PEAKKED — README TEMPLATE
-  Replace all [brackets] and remove this comment block when you publish.
--->
-
 <div align="center">
 
 # Peakked
 
-### Discover what’s trending in games — players, streams, and discovery in one place.
+### Analytics for **players**, **streams**, and **discovery** — read the momentum behind what people are playing.
 
 [![Expo](https://img.shields.io/badge/Expo-SDK%2055-000020?style=flat&logo=expo&logoColor=white)](https://expo.dev/)
 [![React Native](https://img.shields.io/badge/React%20Native-0.83-61DAFB?style=flat&logo=react&logoColor=black)](https://reactnative.dev/)
 [![License](https://img.shields.io/badge/license-[YOUR_LICENSE]-blue.svg)](#license)
 
-**[YOUR_TAGLINE — one line, e.g. “A mobile hub for game popularity and AI-assisted discovery.”]**
+**Power the charts.**
 
 <br />
 
@@ -30,9 +25,11 @@
 
 ## What is Peakked?
 
-**Peakked** is a cross-platform mobile app (built with **Expo** / **React Native**) focused on **game popularity**, **comparison**, and **discovery**. It brings together ideas you’d expect from a “trending games” experience. Live-style stats presentation, layouts for browsing, and a Ai focused (Nexa Ai) gaming recommendations — in a single installable demo.
+As a streamer and gamer, I always found myself jumping between Twitch, TikTok, YouTube, and Steam just to figure out what people were actually playing and watching at any given moment. Each platform only showed part of the picture, and piecing it all together every time got old. I wanted one place where I could see player counts, stream activity, and overall popularity side by side — real-time, without the tab juggling.
 
-This repository is a **work-in-progress** by an **independent developer**. It is shared to showcase UI/UX direction, architecture choices, and roadmap — not as a finished commercial product (yet).
+Peakked is that idea turned into an app. It pulls trending data, comparisons, and discovery into a single view built with Expo and React Native. Charts track how games rise and fall over time, and Nexa (the AI layer) helps surface recommendations when you’re not sure what to play next. The goal is to keep expanding what sources it pulls from so the picture gets more complete over time.
+
+This repository is a work-in-progress demo by an independent developer. It’s shared to showcase UI/UX direction, architecture choices, and roadmap — not a finished commercial product (yet).
 
 ---
 
@@ -51,10 +48,10 @@ This repository is a **work-in-progress** by an **independent developer**. It is
 
 GIFs live under `app/assets/gifs/` (paths below are relative to the **repository root** so they render on GitHub).
 
-|               Home / Popular                |          NEXA discovery          |            Compare / detail            |
-| :-----------------------------------------: | :------------------------------: | :------------------------------------: |
-| ![Popular tab](app/assets/gifs/populargif.gif)  | ![NEXA](app/assets/gifs/nexagif.gif) | ![Compare](app/assets/gifs/comparegif.gif) |
-| _Caption: trending-style list & sparklines_ |    _Caption: filters & cards_    |    _Caption: side-by-side metrics_     |
+|                 Home / Popular                 |            NEXA discovery            |              Compare / detail              |
+| :--------------------------------------------: | :----------------------------------: | :----------------------------------------: |
+| ![Popular tab](app/assets/gifs/populargif.gif) | ![NEXA](app/assets/gifs/nexagif.gif) | ![Compare](app/assets/gifs/comparegif.gif) |
+|  _Caption: trending-style list & sparklines_   |      _Caption: filters & cards_      |      _Caption: side-by-side metrics_       |
 
 <p align="center">
   <sub>On GitHub, use <code>/</code> in image paths, not Windows <code>\</code>.</sub>
@@ -64,11 +61,11 @@ GIFs live under `app/assets/gifs/` (paths below are relative to the **repository
 
 ## Tech stack
 
-| Layer                  | Choices                                                                             |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| **App**                | Expo ~55, React Native, React Navigation                                            |
-| **UI**                 | Custom theming, Reanimated, Skia where used, `expo-image` for cached remote art     |
-| **Data (demo)**        | In-app mocks + optional FastAPI backend when demo mode is off                       |
+| Layer                  | Choices                                                                                 |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| **App**                | Expo ~55, React Native, React Navigation                                                |
+| **UI**                 | Custom theming, Reanimated, Skia where used, `expo-image` for cached remote art         |
+| **Data (demo)**        | In-app mocks + optional FastAPI backend when demo mode is off                           |
 | **Backend (optional)** | Python / FastAPI — recommendations, RAWG, Twitch, Steam trending _(see `app/backend/`)_ |
 
 ---
