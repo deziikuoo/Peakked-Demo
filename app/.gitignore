@@ -42,7 +42,5 @@ yarn-error.*
 /ios
 /android
 
-# Backend (Python)
-backend/venv/
-backend/.env
-backend/__pycache__/
+# Backend (Python / FastAPI) — not part of frontend-only pushes
+backend/

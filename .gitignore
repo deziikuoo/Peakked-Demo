@@ -43,3 +43,6 @@ yarn-error.*
 # Native build artifacts (if generated)
 app/ios/
 app/android/
+
+# Backend (Python / FastAPI) — frontend-only remote; keep backend locally, do not commit
+app/backend/
