@@ -1,5 +1,5 @@
-import { memo } from "react";
-import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
+import { memo, useState, useCallback } from "react";
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { themes } from '../theme/colors';
 import { formatPlayerCount, formatStreamCount, getTrend } from '../data/shared/gameFormatters';
@@ -81,7 +81,7 @@ const localStyles = StyleSheet.create({
   sparklineWrap: {
     marginTop: 10,
     width: '100%',
-    height: 48,
+    minHeight: 48,
     overflow: 'visible',
   },
   ratingAndBadgeRow: {
@@ -94,9 +94,17 @@ const localStyles = StyleSheet.create({
 });
 
 function GameHeroCard({ game, onPress, animateSparkline = true }) {
-  const { width: winWidth } = useWindowDimensions();
+  const [sparkW, setSparkW] = useState(0);
+  const onSparkLayout = useCallback((e) => {
+    const w = e.nativeEvent.layout.width;
+    if (w < 1) return;
+    setSparkW((prev) => (Math.abs(prev - w) < 0.5 ? prev : w));
+  }, []);
+  const sparkH =
+    sparkW > 0
+      ? Math.max(48, Math.min(80, Math.round(sparkW * 0.12)))
+      : 48;
   const { getDisplayWatched, toggleWatch } = useWatchlist();
-  const contentWidth = winWidth - 32 - 32;
   const hasRating = game.rating != null;
   const history = game.history;
   const trend = history ? getTrend(history) : { direction: 'stable', percentChange: 0 };
@@ -137,11 +145,12 @@ function GameHeroCard({ game, onPress, animateSparkline = true }) {
             </Text>
           </View>
           {history && history.length > 0 && (
-            <View style={localStyles.sparklineWrap}>
+            <View style={localStyles.sparklineWrap} onLayout={onSparkLayout}>
+              {sparkW > 0 ? (
               <SparklineScrubbable
                 data={history}
-                width={contentWidth}
-                height={48}
+                width={sparkW}
+                height={sparkH}
                 color={colors.primary}
                 animated
                 formatValue={formatPlayerCount}
@@ -149,6 +158,7 @@ function GameHeroCard({ game, onPress, animateSparkline = true }) {
                 animationEnabled={animateSparkline}
                 clipBottomRadius={10}
               />
+              ) : null}
             </View>
           )}
           <View style={localStyles.ratingAndBadgeRow}>

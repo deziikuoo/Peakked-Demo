@@ -13,14 +13,8 @@ import {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSpring,
-  runOnJS,
 } from "react-native-reanimated";
-import {
-  GestureDetector,
-  Gesture,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AnimatedView } from "../utils/animatedViews";
 import { Ionicons } from "@expo/vector-icons";
 import { captureRef } from "react-native-view-shot";
@@ -133,7 +127,7 @@ const localStyles = StyleSheet.create({
   },
   sparklineWrap: {
     marginTop: 20,
-    height: 64,
+    minHeight: 64,
     width: "100%",
     overflow: "visible",
   },
@@ -347,6 +341,17 @@ export default function GameDetailModal({
     if (game) toggleWatch(game);
   });
   const modalContentWidth = Math.min(winWidth - 48, 400) - 40;
+  const [sparkStripW, setSparkStripW] = useState(0);
+  const onSparkStripLayout = useCallback((e) => {
+    const w = e.nativeEvent.layout.width;
+    if (w < 1) return;
+    setSparkStripW((prev) => (Math.abs(prev - w) < 0.5 ? prev : w));
+  }, []);
+  const chartW = sparkStripW > 0 ? sparkStripW : modalContentWidth;
+  const chartH =
+    chartW > 0
+      ? Math.max(64, Math.min(88, Math.round(chartW * 0.11)))
+      : 64;
 
   const handleMetricChange = (metric) => {
     setActiveMetric(metric);
@@ -539,52 +544,6 @@ export default function GameDetailModal({
     }
   }, [visible, overlayOpacity]);
 
-  /** Swipe any direction on the detail card to dismiss */
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-
-  useEffect(() => {
-    if (visible) {
-      translateX.value = 0;
-      translateY.value = 0;
-    }
-  }, [visible, translateX, translateY]);
-
-  const dismissFromSwipe = useCallback(() => {
-    onClose();
-  }, [onClose]);
-
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .onUpdate((e) => {
-          translateX.value = e.translationX;
-          translateY.value = e.translationY;
-        })
-        .onEnd((e) => {
-          const dist = Math.hypot(e.translationX, e.translationY);
-          const speed = Math.hypot(e.velocityX, e.velocityY);
-          const DISMISS_DISTANCE = 64;
-          const DISMISS_VELOCITY = 850;
-          if (dist > DISMISS_DISTANCE || speed > DISMISS_VELOCITY) {
-            translateX.value = 0;
-            translateY.value = 0;
-            runOnJS(dismissFromSwipe)();
-            return;
-          }
-          translateX.value = withSpring(0, { damping: 18, stiffness: 260 });
-          translateY.value = withSpring(0, { damping: 18, stiffness: 260 });
-        }),
-    [dismissFromSwipe, translateX, translateY]
-  );
-
-  const cardDragStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-    ],
-  }));
-
   if (!game) return null;
 
   const isLiked = getDisplayWatched(game.id);
@@ -599,9 +558,8 @@ export default function GameDetailModal({
             accessibilityRole="button"
             accessibilityLabel="Dismiss dialog"
           />
-          <GestureDetector gesture={panGesture}>
             <AnimatedView
-              style={[localStyles.card, cardDragStyle]}
+              style={localStyles.card}
               accessibilityViewIsModal
             >
           <View style={localStyles.imageWrap}>
@@ -705,12 +663,12 @@ export default function GameDetailModal({
                     onToggle={handleRangeChange}
                   />
                 </View>
-                <View style={localStyles.sparklineWrap}>
+                <View style={localStyles.sparklineWrap} onLayout={onSparkStripLayout}>
                   {activeMetric === "players" && (
                     <SparklineScrubbable
                       data={currentPlayerData}
-                      width={modalContentWidth}
-                      height={64}
+                      width={chartW}
+                      height={chartH}
                       color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
@@ -734,8 +692,8 @@ export default function GameDetailModal({
                   {activeMetric === "streams" && hasCurrentStream && (
                     <SparklineScrubbable
                       data={currentStreamData}
-                      width={modalContentWidth}
-                      height={64}
+                      width={chartW}
+                      height={chartH}
                       color={colors.secondary}
                       animated
                       formatValue={formatStreamCount}
@@ -759,8 +717,8 @@ export default function GameDetailModal({
                   {activeMetric === "streams" && !hasCurrentStream && (
                     <SparklineScrubbable
                       data={currentPlayerData}
-                      width={modalContentWidth}
-                      height={64}
+                      width={chartW}
+                      height={chartH}
                       color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
@@ -784,8 +742,8 @@ export default function GameDetailModal({
                   {activeMetric === "views" && hasCurrentView && (
                     <SparklineScrubbable
                       data={currentViewData}
-                      width={modalContentWidth}
-                      height={64}
+                      width={chartW}
+                      height={chartH}
                       color={VIEWS_COLOR}
                       animated
                       formatValue={formatViewCount}
@@ -809,8 +767,8 @@ export default function GameDetailModal({
                   {activeMetric === "views" && !hasCurrentView && (
                     <SparklineScrubbable
                       data={currentPlayerData}
-                      width={modalContentWidth}
-                      height={64}
+                      width={chartW}
+                      height={chartH}
                       color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
@@ -834,8 +792,8 @@ export default function GameDetailModal({
                   {activeMetric === "all" && (
                     <SparklineScrubbable
                       data={currentPlayerData}
-                      width={modalContentWidth}
-                      height={64}
+                      width={chartW}
+                      height={chartH}
                       color={playerLineColor}
                       animated
                       formatValue={formatPlayerCount}
@@ -966,7 +924,6 @@ export default function GameDetailModal({
             </View>
           </View>
             </AnimatedView>
-          </GestureDetector>
       <View
         ref={shareCardRef}
         style={{

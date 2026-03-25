@@ -1,10 +1,9 @@
-import { useEffect, useRef, memo } from "react";
+import { useEffect, useRef, memo, useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
-  useWindowDimensions,
 } from "react-native";
 import {
   useSharedValue,
@@ -95,7 +94,7 @@ const localStyles = StyleSheet.create({
   sparklineWrap: {
     paddingHorizontal: 12,
     paddingBottom: 8,
-    height: 48,
+    minHeight: 48,
     width: "100%",
   },
   peakRow: {
@@ -152,8 +151,16 @@ function PeakNowPill() {
 }
 
 function WatchlistCard({ game, onPress, index, showHeart = false }) {
-  const { width: winWidth } = useWindowDimensions();
-  const contentWidth = winWidth - 32 - 24;
+  const [sparkW, setSparkW] = useState(0);
+  const onSparkLayout = useCallback((e) => {
+    const w = e.nativeEvent.layout.width;
+    if (w < 1) return;
+    setSparkW((prev) => (Math.abs(prev - w) < 0.5 ? prev : w));
+  }, []);
+  const sparkH =
+    sparkW > 0
+      ? Math.max(48, Math.min(80, Math.round(sparkW * 0.12)))
+      : 48;
   const { toggleWatch } = useWatchlist();
 
   const history = game.history;
@@ -195,17 +202,19 @@ function WatchlistCard({ game, onPress, index, showHeart = false }) {
         </View>
 
         {history && history.length > 0 && (
-          <View style={localStyles.sparklineWrap}>
+          <View style={localStyles.sparklineWrap} onLayout={onSparkLayout}>
+            {sparkW > 0 ? (
             <Sparkline
               data={history}
-              width={contentWidth}
-              height={48}
+              width={sparkW}
+              height={sparkH}
               color={colors.primary}
               animated
               clipBottomRadius={10}
               animationDelayMs={0}
               animationEnabled={false}
             />
+            ) : null}
           </View>
         )}
 

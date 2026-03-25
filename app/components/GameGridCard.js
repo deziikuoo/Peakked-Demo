@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
+import { memo, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { themes } from '../theme/colors';
 import {
   formatPlayerCount,
@@ -70,7 +70,7 @@ const localStyles = StyleSheet.create({
   sparklineWrap: {
     marginTop: 6,
     width: '100%',
-    height: 28,
+    minHeight: 28,
   },
   viewsBadgeOverlay: {
     position: 'absolute',
@@ -81,9 +81,17 @@ const localStyles = StyleSheet.create({
 });
 
 function GameGridCard({ game, onPress, index, animateSparkline = true }) {
-  const { width: winWidth } = useWindowDimensions();
+  const [sparkW, setSparkW] = useState(0);
+  const onSparkLayout = useCallback((e) => {
+    const w = e.nativeEvent.layout.width;
+    if (w < 1) return;
+    setSparkW((prev) => (Math.abs(prev - w) < 0.5 ? prev : w));
+  }, []);
+  const sparkH =
+    sparkW > 0
+      ? Math.max(28, Math.min(44, Math.round(sparkW * 0.14)))
+      : 28;
   const { toggleWatch } = useWatchlist();
-  const cardContentWidth = Math.max(0, (winWidth - 72) / 2);
   const history = game.history;
   const trend = history ? getTrend(history) : { direction: 'stable', percentChange: 0 };
   const sparkColor = trendColor(trend.direction);
@@ -120,17 +128,19 @@ function GameGridCard({ game, onPress, index, animateSparkline = true }) {
           <TrendBadge direction={trend.direction} percentChange={trend.percentChange} />
         </View>
         {history && history.length > 0 && (
-          <View style={localStyles.sparklineWrap}>
+          <View style={localStyles.sparklineWrap} onLayout={onSparkLayout}>
+            {sparkW > 0 ? (
             <Sparkline
               data={history}
-              width={cardContentWidth}
-              height={28}
+              width={sparkW}
+              height={sparkH}
               color={colors.primary}
               animated
               clipBottomRadius={8}
               animationDelayMs={index != null ? index * STAGGER_MS : 0}
               animationEnabled={animateSparkline && (index == null || index < ANIMATION_CAP)}
             />
+            ) : null}
           </View>
         )}
       </View>
